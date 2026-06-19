@@ -1,0 +1,62 @@
+name: Release iOS
+
+# Manual job: optionally bump the app version, then build the iOS app on EAS
+# (and optionally submit it to App Store Connect once Apple credentials exist).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Marketing version e.g. 1.0.1 (blank = keep current app.json version)'
+        required: false
+        type: string
+      submit:
+        description: 'Submit the build to App Store Connect after it finishes'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-ios
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to push the version bump commit + tag
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Bump version + tag
+        if: ${{ inputs.version != '' }}
+        env:
+          V: ${{ inputs.version }}
+        run: |
+          node -e "const fs=require('fs'),p='app.json',j=JSON.parse(fs.readFileSync(p));j.expo.version=process.env.V;fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n')"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "Release v$V"
+          git tag "v$V"
+          git push --follow-tags
+
+      - name: Build iOS (production)
+        run: eas build --platform ios --profile production --non-interactive
+
+      - name: Submit to App Store Connect
+        if: ${{ inputs.submit }}
+        run: eas submit --platform ios --profile production --latest --non-interactive

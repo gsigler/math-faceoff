@@ -1,15 +1,16 @@
 {
   "expo": {
-    "name": "Math Faceoff",
+    "name": "Fact Faceoff",
     "slug": "math-faceoff",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mathfaceoff",
+    "scheme": "factfaceoff",
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/expo.icon",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.slicecraft.factfaceoff"
     },
     "android": {
       "adaptiveIcon": {
@@ -41,6 +42,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b69f4e1e-dd85-4872-9e27-b551f1ebd8ba"
+      }
+    },
+    "owner": "grady15"
   }
 }
