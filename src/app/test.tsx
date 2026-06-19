@@ -46,7 +46,23 @@ export default function Test() {
       return () => clearTimeout(t);
     }
   }, [r.wrong]);
-  const shakeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: shake.value }] }));
+
+  // Celebrate a correct answer: pop the box, hold it on screen for a beat,
+  // then advance to the next problem.
+  const pop = useSharedValue(1);
+  useEffect(() => {
+    if (r.correct) {
+      pop.value = withSequence(
+        withTiming(1.12, { duration: 120 }),
+        withTiming(1, { duration: 180 }),
+      );
+      const t = setTimeout(() => useRound.getState().advance(), 650);
+      return () => clearTimeout(t);
+    }
+  }, [r.correct]);
+  const shakeStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: shake.value }, { scale: pop.value }],
+  }));
 
   // Blinking caret when there's no input.
   const blink = useSharedValue(1);
@@ -99,9 +115,9 @@ export default function Test() {
               height: 86,
               paddingHorizontal: 22,
               borderWidth: 3,
-              borderColor: r.wrong ? colors.danger : accent,
+              borderColor: r.wrong ? colors.danger : r.correct ? colors.success : accent,
               borderRadius: radius.xl,
-              backgroundColor: colors.surface,
+              backgroundColor: r.correct ? colors.success : colors.surface,
               alignItems: 'center',
               justifyContent: 'center',
             },
@@ -109,7 +125,7 @@ export default function Test() {
           ]}
         >
           {r.input.length > 0 ? (
-            <Text kind="display" size={48}>
+            <Text kind="display" size={48} color={r.correct ? colors.white : colors.ink}>
               {r.input}
             </Text>
           ) : (

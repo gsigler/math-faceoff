@@ -16,6 +16,7 @@ interface RoundState {
   sym: string;
   input: string;
   wrong: boolean; // drives the shake animation
+  correct: boolean; // pause on the right answer for a beat of celebration
 
   score: number;
   wrongCount: number;
@@ -28,6 +29,7 @@ interface RoundState {
   press: (digit: string) => void;
   del: () => void;
   clear: () => void;
+  advance: () => void;
   tick: () => void;
   clearWrong: () => void;
 }
@@ -43,6 +45,7 @@ export const useRound = create<RoundState>((set, get) => ({
   sym: '+',
   input: '',
   wrong: false,
+  correct: false,
   score: 0,
   wrongCount: 0,
   streak: 0,
@@ -63,6 +66,7 @@ export const useRound = create<RoundState>((set, get) => ({
       sym: p.sym,
       input: '',
       wrong: false,
+      correct: false,
       score: 0,
       wrongCount: 0,
       streak: 0,
@@ -73,20 +77,18 @@ export const useRound = create<RoundState>((set, get) => ({
 
   press: (digit) => {
     const s = get();
-    if (s.status !== 'running') return;
+    if (s.status !== 'running' || s.correct) return;
     const next = s.input + digit;
 
     if (Number(next) === s.answer) {
-      const p = makeProblem(s.operation, s.mode, s.practiceNumber);
+      // Keep the correct answer on screen for a beat of celebration;
+      // `advance` swaps in the next problem once the moment passes.
       set({
-        input: '',
+        input: next,
         score: s.score + 1,
         streak: s.streak + 1,
-        a: p.a,
-        b: p.b,
-        answer: p.answer,
-        sym: p.sym,
         wrong: false,
+        correct: true,
       });
       return;
     }
@@ -101,14 +103,21 @@ export const useRound = create<RoundState>((set, get) => ({
 
   del: () => {
     const s = get();
-    if (s.status !== 'running') return;
+    if (s.status !== 'running' || s.correct) return;
     set({ input: s.input.slice(0, -1) });
   },
 
   clear: () => {
     const s = get();
-    if (s.status !== 'running') return;
+    if (s.status !== 'running' || s.correct) return;
     set({ input: '' });
+  },
+
+  advance: () => {
+    const s = get();
+    if (s.status !== 'running') return;
+    const p = makeProblem(s.operation, s.mode, s.practiceNumber);
+    set({ input: '', a: p.a, b: p.b, answer: p.answer, sym: p.sym, correct: false });
   },
 
   tick: () => {

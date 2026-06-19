@@ -14,6 +14,7 @@ export const colors = {
   track: '#eef0f3', // progress track on white
   trackWarm: '#eadfce', // progress track on cream
   danger: '#EF6F6F',
+  success: '#21BA72', // correct-answer celebration
   gold: '#F0B400',
   goldSoft: '#FFF1C9',
   goldInk: '#A66A00',
