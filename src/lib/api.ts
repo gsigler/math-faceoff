@@ -7,7 +7,7 @@ import type {
   OperationRow,
   Player,
   RecordRow,
-  WeeklyRow,
+  WeeklyOpRow,
 } from './types';
 import type { OperationKey } from '@/theme';
 
@@ -63,14 +63,14 @@ export async function finishRound(input: FinishRoundInput): Promise<FinishResult
   return data as FinishResult;
 }
 
-export async function fetchWeeklyLeaderboard(familyId: string): Promise<WeeklyRow[]> {
+export async function fetchWeeklyByOperation(familyId: string): Promise<WeeklyOpRow[]> {
   const { data, error } = await supabase
-    .from('v_weekly_leaderboard')
-    .select('player_id, name, color, points')
+    .from('v_weekly_by_operation')
+    .select('operation, player_id, name, color, points')
     .eq('family_id', familyId)
     .order('points', { ascending: false });
   if (error) throw error;
-  return (data as WeeklyRow[]) ?? [];
+  return (data as WeeklyOpRow[]) ?? [];
 }
 
 export async function fetchOperationLeaderboard(

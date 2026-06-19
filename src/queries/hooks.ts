@@ -4,7 +4,7 @@ import {
   fetchAllTimeRecords,
   fetchMe,
   fetchOperationLeaderboard,
-  fetchWeeklyLeaderboard,
+  fetchWeeklyByOperation,
 } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/state/session';
@@ -27,10 +27,10 @@ export function useMe() {
   });
 }
 
-export function useWeeklyLeaderboard(familyId?: string) {
+export function useWeeklyByOperation(familyId?: string) {
   return useQuery({
     queryKey: qk.weekly(familyId ?? 'none'),
-    queryFn: () => fetchWeeklyLeaderboard(familyId!),
+    queryFn: () => fetchWeeklyByOperation(familyId!),
     enabled: !!familyId,
   });
 }

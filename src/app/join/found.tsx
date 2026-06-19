@@ -1,5 +1,5 @@
 import { Pressable, View } from 'react-native';
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { Avatar, Card, PrimaryButton, Screen, Text } from '@/components/ui';
 import { colors, radius, shadow } from '@/theme';
 import { useFlow } from '@/state/flow';
@@ -9,8 +9,7 @@ export default function JoinFound() {
   const setPending = useFlow((s) => s.setPending);
 
   if (!fam) {
-    router.replace('/join');
-    return null;
+    return <Redirect href="/join" />;
   }
 
   function joinAsNew() {

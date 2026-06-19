@@ -1,11 +1,11 @@
 import { type DimensionValue, View } from 'react-native';
 import { router } from 'expo-router';
 import { Card, Screen, Text } from '@/components/ui';
-import { OperationCard, RecordsGrid, WeeklyBoard } from '@/components/boards';
+import { OperationCard, RecordsGrid, WeeklyByOperation } from '@/components/boards';
 import { colors, OPERATION_ORDER, OPERATIONS, radius, shadow, type OperationKey } from '@/theme';
 import { useLayout } from '@/theme/responsive';
 import { useFlow } from '@/state/flow';
-import { useAllTimeRecords, useLeaderboardRealtime, useMe, useWeeklyLeaderboard } from '@/queries/hooks';
+import { useAllTimeRecords, useLeaderboardRealtime, useMe, useWeeklyByOperation } from '@/queries/hooks';
 import type { RecordRow } from '@/lib/types';
 
 function weekOfLabel(): string {
@@ -23,7 +23,7 @@ export default function Home() {
   const familyId = me.data?.family_id;
 
   useLeaderboardRealtime(familyId);
-  const weekly = useWeeklyLeaderboard(familyId);
+  const weekly = useWeeklyByOperation(familyId);
   const records = useAllTimeRecords(familyId);
 
   const recordByOp = new Map<OperationKey, RecordRow>();
@@ -77,9 +77,9 @@ export default function Home() {
         <View style={{ flexDirection: 'row', gap: 24, marginTop: 24 }}>
           <Card style={{ flex: 1, padding: 22, borderRadius: 26 }}>
             <Text kind="display" size={22} style={{ marginBottom: 18 }}>
-              This week · who's #1
+              This week · by operation
             </Text>
-            <WeeklyBoard rows={weekly.data ?? []} meId={me.data?.id} size="wide" />
+            <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="wide" />
           </Card>
           <Card style={{ flex: 1, padding: 22, borderRadius: 26 }}>
             <Text kind="display" size={22} style={{ marginBottom: 18 }}>
@@ -126,10 +126,10 @@ export default function Home() {
             This week
           </Text>
           <Text kind="bodyHeavy" size={11} color={colors.faint} style={{ letterSpacing: 0.5 }}>
-            TOTAL POINTS
+            BY OPERATION
           </Text>
         </View>
-        <WeeklyBoard rows={weekly.data ?? []} meId={me.data?.id} size="compact" />
+        <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="compact" />
       </Card>
     </Screen>
   );

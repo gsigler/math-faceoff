@@ -33,6 +33,10 @@ export interface WeeklyRow {
   points: number;
 }
 
+export interface WeeklyOpRow extends WeeklyRow {
+  operation: OperationKey;
+}
+
 export interface OperationRow {
   player_id: string;
   name: string;

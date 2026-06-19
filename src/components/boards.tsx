@@ -10,7 +10,7 @@ import {
   type OperationDef,
   type OperationKey,
 } from '@/theme';
-import type { RecordRow, WeeklyRow } from '@/lib/types';
+import type { RecordRow, WeeklyOpRow } from '@/lib/types';
 
 export type Size = 'compact' | 'wide';
 
@@ -57,13 +57,17 @@ export function OperationCard({
   );
 }
 
-/** Ranked weekly "Total points" rows with bars. */
-export function WeeklyBoard({
+/**
+ * Weekly standings split per operation. A player appears under each operation
+ * they played this week. Operation = colored section header; player keeps their
+ * own color on the avatar + bar.
+ */
+export function WeeklyByOperation({
   rows,
   meId,
   size = 'compact',
 }: {
-  rows: WeeklyRow[];
+  rows: WeeklyOpRow[];
   meId?: string;
   size?: Size;
 }) {
@@ -75,47 +79,90 @@ export function WeeklyBoard({
     );
   }
   const wide = size === 'wide';
-  const avatar = wide ? 42 : 32;
-  const nameSize = wide ? 17 : 14;
-  const scoreSize = wide ? 19 : 15;
-  const barH = wide ? 8 : 6;
-  const gap = wide ? 18 : 13;
-  const max = Math.max(1, ...rows.map((r) => r.points));
+  const byOp = new Map<OperationKey, WeeklyOpRow[]>();
+  rows.forEach((r) => {
+    const list = byOp.get(r.operation) ?? [];
+    list.push(r);
+    byOp.set(r.operation, list);
+  });
+  const sections = OPERATION_ORDER.filter((k) => byOp.has(k));
 
   return (
-    <View style={{ gap }}>
-      {rows.map((r, i) => {
-        const isMe = r.player_id === meId;
+    <View style={{ gap: wide ? 22 : 18 }}>
+      {sections.map((key) => {
+        const op = OPERATIONS[key];
+        const list = (byOp.get(key) ?? []).slice().sort((a, b) => b.points - a.points);
+        const max = Math.max(1, ...list.map((r) => r.points));
         return (
-          <View
-            key={r.player_id}
-            style={[
-              { flexDirection: 'row', alignItems: 'center', gap: wide ? 14 : 11 },
-              isMe && {
-                backgroundColor: colors.highlight,
-                marginHorizontal: wide ? -10 : -8,
-                paddingHorizontal: wide ? 10 : 8,
-                paddingVertical: wide ? 8 : 6,
-                borderRadius: radius.sm,
-              },
-            ]}
-          >
-            <Text kind="display" size={wide ? 18 : 15} color={i === 0 ? colors.gold : colors.faint} style={{ width: wide ? 18 : 14 }}>
-              {i + 1}
-            </Text>
-            <Avatar name={r.name} color={r.color} size={avatar} />
-            <View style={{ flex: 1 }}>
-              <Text kind="bodyHeavy" size={nameSize} style={{ marginBottom: wide ? 6 : 4 }}>
-                {isMe ? 'You' : r.name}
+          <View key={key} style={{ gap: wide ? 13 : 11 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View
+                style={{
+                  width: wide ? 28 : 24,
+                  height: wide ? 28 : 24,
+                  borderRadius: 8,
+                  backgroundColor: op.color,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text kind="display" size={wide ? 19 : 16} color={colors.white}>
+                  {op.sym}
+                </Text>
+              </View>
+              <Text kind="bodyHeavy" size={wide ? 15 : 14} color={op.color}>
+                {op.name}
               </Text>
-              <ProgressBar pct={(r.points / max) * 100} color={r.color} track={isMe ? colors.surface : colors.track} height={barH} />
             </View>
-            <Text kind="display" size={scoreSize}>
-              {r.points.toLocaleString()}
-            </Text>
+            {list.map((r, i) => (
+              <WeeklyRow key={r.player_id} row={r} rank={i + 1} max={max} isMe={r.player_id === meId} wide={wide} />
+            ))}
           </View>
         );
       })}
+    </View>
+  );
+}
+
+function WeeklyRow({
+  row,
+  rank,
+  max,
+  isMe,
+  wide,
+}: {
+  row: WeeklyOpRow;
+  rank: number;
+  max: number;
+  isMe: boolean;
+  wide: boolean;
+}) {
+  return (
+    <View
+      style={[
+        { flexDirection: 'row', alignItems: 'center', gap: wide ? 14 : 11 },
+        isMe && {
+          backgroundColor: colors.highlight,
+          marginHorizontal: wide ? -10 : -8,
+          paddingHorizontal: wide ? 10 : 8,
+          paddingVertical: wide ? 8 : 6,
+          borderRadius: radius.sm,
+        },
+      ]}
+    >
+      <Text kind="display" size={wide ? 17 : 14} color={rank === 1 ? colors.gold : colors.faint} style={{ width: wide ? 18 : 14 }}>
+        {rank}
+      </Text>
+      <Avatar name={row.name} color={row.color} size={wide ? 38 : 30} />
+      <View style={{ flex: 1 }}>
+        <Text kind="bodyHeavy" size={wide ? 16 : 14} style={{ marginBottom: wide ? 6 : 4 }}>
+          {isMe ? 'You' : row.name}
+        </Text>
+        <ProgressBar pct={(row.points / max) * 100} color={row.color} track={isMe ? colors.surface : colors.track} height={wide ? 8 : 6} />
+      </View>
+      <Text kind="display" size={wide ? 18 : 15}>
+        {row.points.toLocaleString()}
+      </Text>
     </View>
   );
 }
