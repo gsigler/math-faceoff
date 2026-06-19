@@ -134,6 +134,26 @@ export default function Home() {
         </View>
         <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="compact" />
       </Card>
+
+      <Card style={{ marginTop: 16, padding: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <Text kind="display" size={17}>
+            All-time records
+          </Text>
+          <Text kind="bodyHeavy" size={11} color={colors.faint} style={{ letterSpacing: 0.5 }}>
+            BY OPERATION
+          </Text>
+        </View>
+        <RecordsGrid records={recordByOp} />
+        <View style={{ marginTop: 14, backgroundColor: '#FFFBEF', borderRadius: radius.md, paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Text kind="displayBold" size={14} color={colors.goldInk}>
+            ★
+          </Text>
+          <Text kind="bodyHeavy" size={12.5} color="#7a6420" style={{ flex: 1, lineHeight: 18 }}>
+            Beat a record in Faceoff and your name takes over the card.
+          </Text>
+        </View>
+      </Card>
     </Screen>
   );
 }
