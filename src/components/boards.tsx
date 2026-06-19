@@ -1,5 +1,5 @@
 import { type DimensionValue, Pressable, View } from 'react-native';
-import { Avatar, OpBadge, ProgressBar, Text } from '@/components/ui';
+import { OpBadge, ProgressBar, Text } from '@/components/ui';
 import {
   colors,
   OPERATION_ORDER,
@@ -59,8 +59,8 @@ export function OperationCard({
 
 /**
  * Weekly standings split per operation. A player appears under each operation
- * they played this week. Operation = colored section header; player keeps their
- * own color on the avatar + bar.
+ * they played this week. Colour belongs to the operation: the section header and
+ * every bar under it share the operation's colour. People have no colour.
  */
 export function WeeklyByOperation({
   rows,
@@ -102,7 +102,7 @@ export function WeeklyByOperation({
               </Text>
             </View>
             {list.map((r, i) => (
-              <WeeklyRow key={r.player_id} row={r} rank={i + 1} max={max} isMe={r.player_id === meId} wide={wide} />
+              <WeeklyRow key={r.player_id} row={r} rank={i + 1} max={max} isMe={r.player_id === meId} wide={wide} accent={op.color} />
             ))}
           </View>
         );
@@ -117,12 +117,14 @@ function WeeklyRow({
   max,
   isMe,
   wide,
+  accent,
 }: {
   row: WeeklyOpRow;
   rank: number;
   max: number;
   isMe: boolean;
   wide: boolean;
+  accent: string;
 }) {
   return (
     <View
@@ -140,12 +142,11 @@ function WeeklyRow({
       <Text kind="display" size={wide ? 17 : 14} color={rank === 1 ? colors.gold : colors.faint} style={{ width: wide ? 18 : 14 }}>
         {rank}
       </Text>
-      <Avatar name={row.name} color={row.color} size={wide ? 38 : 30} />
       <View style={{ flex: 1 }}>
         <Text kind="bodyHeavy" size={wide ? 16 : 14} style={{ marginBottom: wide ? 6 : 4 }}>
           {isMe ? 'You' : row.name}
         </Text>
-        <ProgressBar pct={(row.points / max) * 100} color={row.color} track={isMe ? colors.surface : colors.track} height={wide ? 8 : 6} />
+        <ProgressBar pct={(row.points / max) * 100} color={accent} track={isMe ? colors.surface : colors.track} height={wide ? 8 : 6} />
       </View>
       <Text kind="display" size={wide ? 18 : 15}>
         {row.points.toLocaleString()}

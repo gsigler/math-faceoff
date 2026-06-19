@@ -47,7 +47,7 @@ families join with a spoken word-code. One universal app on iPhone and iPad.
 
 ```
 families   id, name, code (unique), created_at
-players    id, family_id→families, auth_uid (unique), name, color, created_at
+players    id, family_id→families, auth_uid (unique), name, created_at
 rounds     id, player_id→players, family_id→families,
            operation ('add'|'sub'|'mul'|'div'),
            mode ('faceoff'|'practice'),

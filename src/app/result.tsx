@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import { Avatar, Card, PrimaryButton, Screen, SecondaryButton, Text } from '@/components/ui';
+import { Card, PrimaryButton, Screen, SecondaryButton, Text } from '@/components/ui';
 import { colors, OPERATIONS, radius } from '@/theme';
 import { formatTime } from '@/game/facts';
 import { finishRound } from '@/lib/api';
@@ -119,13 +119,12 @@ export default function Result() {
                     <Text kind="display" size={15} color={colors.faint} style={{ width: 18 }}>
                       {i + 1}
                     </Text>
-                    <Avatar name={p.name} color={p.color} size={34} />
                     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                       <Text kind="bodyHeavy" size={15}>
                         {isMe ? 'You' : p.name}
                       </Text>
                       {isMe && (
-                        <View style={{ backgroundColor: '#21BA72', paddingHorizontal: 7, paddingVertical: 2, borderRadius: radius.pill }}>
+                        <View style={{ backgroundColor: accent, paddingHorizontal: 7, paddingVertical: 2, borderRadius: radius.pill }}>
                           <Text kind="bodyHeavy" size={10} color={colors.white} style={{ letterSpacing: 0.5 }}>
                             YOU
                           </Text>

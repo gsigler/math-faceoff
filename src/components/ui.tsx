@@ -126,25 +126,6 @@ export function BackButton({ onPress }: { onPress: () => void }) {
   );
 }
 
-export function Avatar({ name, color, size = 44 }: { name: string; color: string; size?: number }) {
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: radius.pill,
-        backgroundColor: color,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Text kind="bodyHeavy" size={size * 0.42} color={colors.white}>
-        {(name.trim()[0] || '?').toUpperCase()}
-      </Text>
-    </View>
-  );
-}
-
 /**
  * Operator glyph drawn from geometric bars (not a font glyph), so it is exactly
  * centered both axes at any size. `symSize` is the glyph's visual extent.

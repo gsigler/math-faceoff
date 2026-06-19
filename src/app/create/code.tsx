@@ -21,7 +21,7 @@ export default function CreateCode() {
   }
 
   function next() {
-    if (createdFamily) setPending(createdFamily.id, '#21BA72');
+    if (createdFamily) setPending(createdFamily.id);
     router.push('/profile');
   }
 

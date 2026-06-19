@@ -1,4 +1,4 @@
-import { type DimensionValue, View } from 'react-native';
+import { type DimensionValue, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { Card, Screen, Text } from '@/components/ui';
 import { OperationCard, RecordsGrid, WeeklyByOperation } from '@/components/boards';
@@ -8,12 +8,26 @@ import { useFlow } from '@/state/flow';
 import { useAllTimeRecords, useLeaderboardRealtime, useMe, useWeeklyByOperation } from '@/queries/hooks';
 import type { RecordRow } from '@/lib/types';
 
-function weekOfLabel(): string {
-  const now = new Date();
-  const day = now.getDay(); // 0 = Sun
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((day + 6) % 7));
-  return `Week of ${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+/** Family chip: the family name on a candy-shadowed pill. Opens the share
+ *  screen. Lives on the right of the header, like the phone layout. */
+function FamilyButton({ name, nameSize = 13 }: { name: string; nameSize?: number }) {
+  return (
+    <Pressable
+      onPress={() => router.push('/family')}
+      style={({ pressed }) => ({
+        backgroundColor: colors.surface,
+        borderRadius: radius.pill,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        boxShadow: shadow.candy,
+        opacity: pressed ? 0.92 : 1,
+      })}
+    >
+      <Text kind="bodyHeavy" size={nameSize}>
+        {name || '…'}
+      </Text>
+    </Pressable>
+  );
 }
 
 export default function Home() {
@@ -21,6 +35,7 @@ export default function Home() {
   const { isTablet } = useLayout();
   const setOperation = useFlow((s) => s.setOperation);
   const familyId = me.data?.family_id;
+  const greeting = me.data?.name ? `Hi, ${me.data.name}!` : 'Hi!';
 
   useLeaderboardRealtime(familyId);
   const weekly = useWeeklyByOperation(familyId);
@@ -50,23 +65,16 @@ export default function Home() {
   if (isTablet) {
     return (
       <Screen wide>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 26 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 26 }}>
           <View>
             <Text kind="bodyHeavy" size={13} color={colors.faint} style={{ letterSpacing: 1 }}>
               FAMILY MATH FACEOFF
             </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 2 }}>
-              <View style={{ width: 16, height: 16, borderRadius: radius.pill, backgroundColor: me.data?.color ?? '#21BA72' }} />
-              <Text kind="display" size={42}>
-                {me.data?.family.name ?? '…'}
-              </Text>
-            </View>
-          </View>
-          <View style={{ backgroundColor: colors.surface, borderRadius: radius.pill, paddingVertical: 9, paddingHorizontal: 18, boxShadow: shadow.chip }}>
-            <Text kind="bodyHeavy" size={15}>
-              {weekOfLabel()}
+            <Text kind="display" size={42} style={{ marginTop: 2 }}>
+              {greeting}
             </Text>
           </View>
+          <FamilyButton name={me.data?.family.name ?? ''} nameSize={15} />
         </View>
 
         <Text kind="bodyHeavy" size={14} color={colors.muted} style={{ marginBottom: 14 }}>
@@ -105,14 +113,9 @@ export default function Home() {
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <Text kind="display" size={26}>
-          Faceoff
+          {greeting}
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, backgroundColor: colors.surface, borderRadius: radius.pill, paddingVertical: 6, paddingHorizontal: 12, boxShadow: shadow.chip }}>
-          <View style={{ width: 18, height: 18, borderRadius: radius.pill, backgroundColor: me.data?.color ?? '#21BA72' }} />
-          <Text kind="bodyHeavy" size={13}>
-            {me.data?.family.name ?? '…'}
-          </Text>
-        </View>
+        <FamilyButton name={me.data?.family.name ?? ''} />
       </View>
       <Text kind="bodyHeavy" size={13.5} color={colors.muted} style={{ marginBottom: 18 }}>
         Pick an operation to play

@@ -1,29 +1,27 @@
 import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { BackButton, PrimaryButton, Screen, Text } from '@/components/ui';
-import { AVATAR_COLORS, colors, radius, shadow } from '@/theme';
+import { colors, radius } from '@/theme';
 import { createPlayer } from '@/lib/api';
 import { useFlow } from '@/state/flow';
 import { useSession } from '@/state/session';
 import { qk } from '@/queries/hooks';
 
 export default function Profile() {
-  const { pendingFamilyId, pendingColor, reset } = useFlow();
+  const { pendingFamilyId, reset } = useFlow();
   const { uid } = useSession();
   const qc = useQueryClient();
   const [name, setName] = useState('');
-  const [color, setColor] = useState(pendingColor);
   const [busy, setBusy] = useState(false);
   const valid = name.trim().length > 0;
-  const initial = name.trim() ? name.trim()[0].toUpperCase() : '?';
 
   async function finish() {
     if (!valid || busy || !pendingFamilyId) return;
     setBusy(true);
     try {
-      await createPlayer(pendingFamilyId, name.trim(), color);
+      await createPlayer(pendingFamilyId, name.trim());
       reset();
       if (uid) await qc.invalidateQueries({ queryKey: qk.me(uid) });
       router.replace('/home');
@@ -41,24 +39,6 @@ export default function Profile() {
       <Text kind="bodyHeavy" size={14.5} color={colors.muted} style={{ marginHorizontal: 2, marginTop: 2, marginBottom: 20 }}>
         This is how your family sees you.
       </Text>
-
-      <View style={{ alignItems: 'center', marginBottom: 22 }}>
-        <View
-          style={{
-            width: 96,
-            height: 96,
-            borderRadius: radius.pill,
-            backgroundColor: color,
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: shadow.candy,
-          }}
-        >
-          <Text kind="display" size={46} color={colors.white}>
-            {initial}
-          </Text>
-        </View>
-      </View>
 
       <TextInput
         value={name}
@@ -79,26 +59,6 @@ export default function Profile() {
           backgroundColor: colors.surface,
         }}
       />
-
-      <Text kind="bodyHeavy" size={12} color={colors.faint} style={{ letterSpacing: 0.5, marginTop: 22, marginBottom: 12, marginHorizontal: 2 }}>
-        PICK YOUR COLOUR
-      </Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 9 }}>
-        {AVATAR_COLORS.map((c) => (
-          <Pressable
-            key={c}
-            onPress={() => setColor(c)}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: radius.pill,
-              backgroundColor: c,
-              borderWidth: 3,
-              borderColor: c === color ? colors.ink : 'transparent',
-            }}
-          />
-        ))}
-      </View>
 
       <View style={{ flex: 1 }} />
       <PrimaryButton label={busy ? 'Setting up…' : 'Start playing →'} disabled={!valid || busy} onPress={finish} />

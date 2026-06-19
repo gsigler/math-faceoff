@@ -11,7 +11,6 @@ export interface Family {
 export interface Member {
   id: string;
   name: string;
-  color: string;
 }
 
 export interface FamilyLookup extends Family {
@@ -22,14 +21,12 @@ export interface Player {
   id: string;
   family_id: string;
   name: string;
-  color: string;
   created_at: string;
 }
 
 export interface WeeklyRow {
   player_id: string;
   name: string;
-  color: string;
   points: number;
 }
 
@@ -40,7 +37,6 @@ export interface WeeklyOpRow extends WeeklyRow {
 export interface OperationRow {
   player_id: string;
   name: string;
-  color: string;
   best: number;
 }
 
@@ -48,7 +44,6 @@ export interface RecordRow {
   operation: OperationKey;
   best: number;
   holder_name: string;
-  holder_color: string;
 }
 
 export interface FinishResult {

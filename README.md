@@ -44,7 +44,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full design.
 ```
 src/
   app/         expo-router screens (welcome → onboarding → home → play → result)
-  components/  shared UI primitives (Screen, buttons, Avatar, ProgressBar…)
+  components/  shared UI primitives (Screen, buttons, ProgressBar…)
   game/        problem generation + scoring
   theme/       arcade palette, tokens, responsive helpers
   lib/         supabase client, typed API, env

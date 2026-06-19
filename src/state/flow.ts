@@ -14,10 +14,9 @@ interface FlowState {
   setCreatedFamily: (f: Family | null) => void;
   setLookupResult: (f: FamilyLookup | null) => void;
 
-  // which family the new player joins, and a sensible default color
+  // which family the new player joins
   pendingFamilyId: string | null;
-  pendingColor: string;
-  setPending: (familyId: string, color: string) => void;
+  setPending: (familyId: string) => void;
 
   reset: () => void;
 }
@@ -32,9 +31,7 @@ export const useFlow = create<FlowState>((set) => ({
   setLookupResult: (f) => set({ lookupResult: f }),
 
   pendingFamilyId: null,
-  pendingColor: '#21BA72',
-  setPending: (familyId, color) => set({ pendingFamilyId: familyId, pendingColor: color }),
+  setPending: (familyId) => set({ pendingFamilyId: familyId }),
 
-  reset: () =>
-    set({ createdFamily: null, lookupResult: null, pendingFamilyId: null, pendingColor: '#21BA72' }),
+  reset: () => set({ createdFamily: null, lookupResult: null, pendingFamilyId: null }),
 }));

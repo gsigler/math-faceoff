@@ -36,15 +36,10 @@ export async function lookupFamily(code: string): Promise<FamilyLookup | null> {
   return (data as FamilyLookup | null) ?? null;
 }
 
-export async function createPlayer(
-  familyId: string,
-  name: string,
-  color: string,
-): Promise<Player> {
+export async function createPlayer(familyId: string, name: string): Promise<Player> {
   const { data, error } = await supabase.rpc('create_player', {
     p_family_id: familyId,
     p_name: name,
-    p_color: color,
   });
   if (error) throw error;
   return data as Player;
@@ -66,7 +61,7 @@ export async function finishRound(input: FinishRoundInput): Promise<FinishResult
 export async function fetchWeeklyByOperation(familyId: string): Promise<WeeklyOpRow[]> {
   const { data, error } = await supabase
     .from('v_weekly_by_operation')
-    .select('operation, player_id, name, color, points')
+    .select('operation, player_id, name, points')
     .eq('family_id', familyId)
     .order('points', { ascending: false });
   if (error) throw error;
@@ -79,7 +74,7 @@ export async function fetchOperationLeaderboard(
 ): Promise<OperationRow[]> {
   const { data, error } = await supabase
     .from('v_operation_leaderboard')
-    .select('player_id, name, color, best')
+    .select('player_id, name, best')
     .eq('family_id', familyId)
     .eq('operation', operation)
     .order('best', { ascending: false });
@@ -90,7 +85,7 @@ export async function fetchOperationLeaderboard(
 export async function fetchAllTimeRecords(familyId: string): Promise<RecordRow[]> {
   const { data, error } = await supabase
     .from('v_all_time_records')
-    .select('operation, best, holder_name, holder_color')
+    .select('operation, best, holder_name')
     .eq('family_id', familyId);
   if (error) throw error;
   return (data as RecordRow[]) ?? [];

@@ -41,12 +41,6 @@ export const OPERATIONS: Record<OperationKey, OperationDef> = {
 
 export const OPERATION_ORDER: OperationKey[] = ['add', 'sub', 'mul', 'div'];
 
-// Avatar / player colors (selectable on the profile screen).
-export const AVATAR_COLORS = [
-  '#21BA72', '#2E90E0', '#B25CE0', '#F08A37',
-  '#EF6F6F', '#F0B400', '#5B6CF0', '#15B5B0',
-];
-
 export const fonts = {
   // Display (chunky, rounded) — Fredoka
   display: 'Fredoka_600SemiBold',
