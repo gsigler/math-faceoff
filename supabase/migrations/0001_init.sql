@@ -1,4 +1,4 @@
--- Math Faceoff — initial schema
+-- Fact Faceoff — initial schema
 -- Families, players, rounds. No logins: identity is the anonymous auth.uid().
 -- Leaderboards are derived from `rounds`. Writes go through SECURITY DEFINER RPCs.
 

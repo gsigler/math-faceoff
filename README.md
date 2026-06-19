@@ -1,4 +1,4 @@
-# Math Faceoff
+# Fact Faceoff
 
 A family math-facts competition. Pick an operation, race a 2:00 clock answering
 facts 1–12, and post your score to a shared family leaderboard. **No logins** —

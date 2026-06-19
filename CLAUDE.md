@@ -5,8 +5,9 @@ human setup is in [README.md](README.md).
 
 ## What this is
 
-A family math-facts competition. **Expo (React Native) + Supabase**, one universal
-iPhone/iPad app. **No logins** — anonymous auth; families join with a word-code.
+**Fact Faceoff** — a family math-facts competition. **Expo (React Native) + Supabase**,
+one universal iPhone/iPad app. **No logins** — anonymous auth; families join with a
+word-code.
 
 ## Run it
 

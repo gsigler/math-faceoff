@@ -23,7 +23,7 @@ export default function Family() {
   async function share() {
     try {
       await Share.share({
-        message: `Join ${name} on Math Faceoff! Our family code is ${code}.`,
+        message: `Join ${name} on Fact Faceoff! Our family code is ${code}.`,
       });
     } catch {
       // Share unavailable (e.g. web) — fall back to copying the code.
