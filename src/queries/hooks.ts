@@ -59,8 +59,10 @@ export function useLeaderboardRealtime(familyId?: string) {
   const qc = useQueryClient();
   useEffect(() => {
     if (!familyId) return;
+    // Unique channel name per subscription: reusing a topic name returns an
+    // already-subscribed channel, and adding `.on()` after subscribe() throws.
     const channel = supabase
-      .channel(`rounds:${familyId}`)
+      .channel(`rounds:${familyId}:${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'rounds', filter: `family_id=eq.${familyId}` },
