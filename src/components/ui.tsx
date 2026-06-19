@@ -145,6 +145,61 @@ export function Avatar({ name, color, size = 44 }: { name: string; color: string
   );
 }
 
+/**
+ * Operator glyph drawn from geometric bars (not a font glyph), so it is exactly
+ * centered both axes at any size. `symSize` is the glyph's visual extent.
+ */
+function OpGlyph({ sym, symSize, color }: { sym: string; symSize: number; color: string }) {
+  const L = Math.round(symSize * 0.72); // glyph length
+  const t = Math.max(2, Math.round(symSize * 0.18)); // stroke thickness
+  const bar = (s: ViewStyle, key?: string) => (
+    <View key={key} style={[{ position: 'absolute', backgroundColor: color, borderRadius: t / 2 }, s]} />
+  );
+  const hBar: ViewStyle = { top: (L - t) / 2, left: 0, width: L, height: t };
+  const vBar: ViewStyle = { left: (L - t) / 2, top: 0, width: t, height: L };
+
+  let parts: ReactNode;
+  if (sym === '+') parts = [bar(hBar, 'h'), bar(vBar, 'v')];
+  else if (sym === '−') parts = bar(hBar, 'h'); // −
+  else if (sym === '×') {
+    parts = [bar({ ...hBar, transform: [{ rotate: '45deg' }] }, 'a'), bar({ ...hBar, transform: [{ rotate: '-45deg' }] }, 'b')]; // ×
+  } else {
+    const d = Math.max(2, Math.round(symSize * 0.2)); // dot
+    const gap = Math.max(2, Math.round(symSize * 0.12));
+    parts = [
+      bar({ top: (L - t) / 2 - gap - d, left: (L - d) / 2, width: d, height: d, borderRadius: d / 2 }, 'top'),
+      bar(hBar, 'mid'),
+      bar({ top: (L + t) / 2 + gap, left: (L - d) / 2, width: d, height: d, borderRadius: d / 2 }, 'bot'),
+    ]; // ÷
+  }
+  return <View style={{ width: L, height: L }}>{parts}</View>;
+}
+
+/** A rounded square holding a perfectly-centered operator glyph. */
+export function OpBadge({
+  sym,
+  size,
+  symSize,
+  bg,
+  color = colors.white,
+  radius: r = 8,
+  style,
+}: {
+  sym: string;
+  size: number;
+  symSize: number;
+  bg: string;
+  color?: string;
+  radius?: number;
+  style?: ViewStyle;
+}) {
+  return (
+    <View style={[{ width: size, height: size, borderRadius: r, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }, style]}>
+      <OpGlyph sym={sym} symSize={symSize} color={color} />
+    </View>
+  );
+}
+
 export function ProgressBar({ pct, color, track = colors.track, height = 8 }: { pct: number; color: string; track?: string; height?: number }) {
   return (
     <View style={{ height, borderRadius: radius.pill, backgroundColor: track, overflow: 'hidden' }}>

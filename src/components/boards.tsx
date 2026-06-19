@@ -1,5 +1,5 @@
 import { type DimensionValue, Pressable, View } from 'react-native';
-import { Avatar, ProgressBar, Text } from '@/components/ui';
+import { Avatar, OpBadge, ProgressBar, Text } from '@/components/ui';
 import {
   colors,
   OPERATION_ORDER,
@@ -96,20 +96,7 @@ export function WeeklyByOperation({
         return (
           <View key={key} style={{ gap: wide ? 13 : 11 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View
-                style={{
-                  width: wide ? 28 : 24,
-                  height: wide ? 28 : 24,
-                  borderRadius: 8,
-                  backgroundColor: op.color,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text kind="display" size={wide ? 19 : 16} color={colors.white}>
-                  {op.sym}
-                </Text>
-              </View>
+              <OpBadge sym={op.sym} size={wide ? 28 : 24} symSize={wide ? 19 : 16} bg={op.color} />
               <Text kind="bodyHeavy" size={wide ? 15 : 14} color={op.color}>
                 {op.name}
               </Text>
