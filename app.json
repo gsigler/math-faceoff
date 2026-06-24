@@ -8,9 +8,11 @@
     "scheme": "factfaceoff",
     "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon",
       "supportsTablet": true,
-      "bundleIdentifier": "com.slicecraft.factfaceoff"
+      "bundleIdentifier": "com.slicecraft.factfaceoff",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -31,10 +33,8 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#21BA72",
-          "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
-          }
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 220
         }
       ],
       "expo-secure-store"
@@ -49,6 +49,12 @@
         "projectId": "b69f4e1e-dd85-4872-9e27-b551f1ebd8ba"
       }
     },
-    "owner": "grady15"
+    "owner": "grady15",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b69f4e1e-dd85-4872-9e27-b551f1ebd8ba"
+    }
   }
 }
