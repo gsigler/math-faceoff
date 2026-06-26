@@ -48,8 +48,23 @@ export interface RecordRow {
 
 export interface FinishResult {
   is_record: boolean;
+  is_personal_best: boolean;
   my_rank: number | null;
   family_best: number;
+  personal_best: number;
+}
+
+export interface AttemptRow {
+  id: string;
+  score: number;
+  wrong_count: number;
+  duration_seconds: number;
+  created_at: string;
+}
+
+export interface MyOperationBest {
+  operation: OperationKey;
+  best: number;
 }
 
 export interface FinishRoundInput {

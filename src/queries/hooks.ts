@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   fetchAllTimeRecords,
   fetchMe,
+  fetchMyAttempts,
+  fetchMyOperationBests,
   fetchOperationLeaderboard,
   fetchWeeklyByOperation,
 } from '@/lib/api';
@@ -15,6 +17,8 @@ export const qk = {
   weekly: (familyId: string) => ['weekly', familyId] as const,
   records: (familyId: string) => ['records', familyId] as const,
   opBoard: (familyId: string, op: OperationKey) => ['opBoard', familyId, op] as const,
+  attempts: (playerId: string, op: OperationKey) => ['attempts', playerId, op] as const,
+  myBests: (playerId: string) => ['myBests', playerId] as const,
 };
 
 /** Current device's player (+ family), or null when onboarding isn't done. */
@@ -40,6 +44,22 @@ export function useAllTimeRecords(familyId?: string) {
     queryKey: qk.records(familyId ?? 'none'),
     queryFn: () => fetchAllTimeRecords(familyId!),
     enabled: !!familyId,
+  });
+}
+
+export function useMyAttempts(playerId: string | undefined, op: OperationKey) {
+  return useQuery({
+    queryKey: qk.attempts(playerId ?? 'none', op),
+    queryFn: () => fetchMyAttempts(playerId!, op),
+    enabled: !!playerId,
+  });
+}
+
+export function useMyOperationBests(playerId?: string) {
+  return useQuery({
+    queryKey: qk.myBests(playerId ?? 'none'),
+    queryFn: () => fetchMyOperationBests(playerId!),
+    enabled: !!playerId,
   });
 }
 
@@ -70,6 +90,8 @@ export function useLeaderboardRealtime(familyId?: string) {
           qc.invalidateQueries({ queryKey: qk.weekly(familyId) });
           qc.invalidateQueries({ queryKey: qk.records(familyId) });
           qc.invalidateQueries({ queryKey: ['opBoard', familyId] });
+          qc.invalidateQueries({ queryKey: ['attempts'] });
+          qc.invalidateQueries({ queryKey: ['myBests'] });
         },
       )
       .subscribe();

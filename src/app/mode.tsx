@@ -1,14 +1,20 @@
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
-import { BackButton, Screen, Text } from '@/components/ui';
+import { BackButton, Card, Screen, Text } from '@/components/ui';
 import { colors, OPERATIONS, radius, shadow, withAlpha } from '@/theme';
 import { useFlow } from '@/state/flow';
 import { useRound } from '@/state/round';
+import { useMe, useMyAttempts } from '@/queries/hooks';
+import type { AttemptRow } from '@/lib/types';
 
 export default function Mode() {
   const opKey = useFlow((s) => s.selectedOperation);
   const op = OPERATIONS[opKey];
   const start = useRound((s) => s.start);
+  const me = useMe();
+  const attempts = useMyAttempts(me.data?.id, opKey);
+  const runs = attempts.data ?? [];
+  const myBest = runs.reduce((m, r) => Math.max(m, r.score), 0);
 
   function startFaceoff() {
     start(opKey, 'faceoff');
@@ -16,7 +22,7 @@ export default function Mode() {
   }
 
   return (
-    <Screen scroll={false}>
+    <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <BackButton onPress={() => router.back()} />
         <View
@@ -104,6 +110,72 @@ export default function Mode() {
           </View>
         </Pressable>
       </View>
+
+      <Card style={{ marginTop: 18, padding: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <Text kind="display" size={17}>
+            Your attempts
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+            <Text kind="bodyHeavy" size={11} color={colors.faint} style={{ letterSpacing: 0.5 }}>
+              YOUR BEST
+            </Text>
+            <Text kind="displayBold" size={22} color={op.color} style={{ lineHeight: 24 }}>
+              {runs.length ? myBest : '—'}
+            </Text>
+          </View>
+        </View>
+
+        {runs.length === 0 ? (
+          <Text kind="bodyHeavy" size={13.5} color={colors.muted} style={{ paddingVertical: 8 }}>
+            No faceoff runs yet — play one to start your streak.
+          </Text>
+        ) : (
+          <View style={{ gap: 4 }}>
+            {runs.map((run) => (
+              <AttemptRowView key={run.id} run={run} isBest={run.score === myBest} accent={op.color} />
+            ))}
+          </View>
+        )}
+      </Card>
     </Screen>
+  );
+}
+
+function AttemptRowView({ run, isBest, accent }: { run: AttemptRow; isBest: boolean; accent: string }) {
+  const total = run.score + run.wrong_count;
+  const accuracy = total === 0 ? '100%' : `${Math.round((run.score / total) * 100)}%`;
+  const date = new Date(run.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingVertical: 9,
+        paddingHorizontal: 10,
+        borderRadius: radius.sm,
+        backgroundColor: isBest ? colors.highlight : colors.surfaceAlt,
+      }}
+    >
+      <Text kind="bodyHeavy" size={14} style={{ width: 56 }}>
+        {date}
+      </Text>
+      <View style={{ flex: 1 }}>
+        <Text kind="bodyHeavy" size={12.5} color={colors.muted}>
+          {accuracy} accuracy
+        </Text>
+      </View>
+      {isBest && (
+        <View style={{ backgroundColor: accent, paddingHorizontal: 7, paddingVertical: 2, borderRadius: radius.pill }}>
+          <Text kind="bodyHeavy" size={10} color={colors.white} style={{ letterSpacing: 0.5 }}>
+            BEST
+          </Text>
+        </View>
+      )}
+      <Text kind="display" size={18}>
+        {run.score}
+      </Text>
+    </View>
   );
 }

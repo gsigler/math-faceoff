@@ -44,11 +44,15 @@ export default function Result() {
           qc.invalidateQueries({ queryKey: qk.records(fid) });
           qc.invalidateQueries({ queryKey: ['opBoard', fid] });
         }
+        if (me.data?.id) {
+          qc.invalidateQueries({ queryKey: qk.attempts(me.data.id, snapshot.operation) });
+          qc.invalidateQueries({ queryKey: qk.myBests(me.data.id) });
+        }
       } catch {
         // Offline / transient: keep the local result on screen.
       }
     })();
-  }, [me.data?.family_id, qc]);
+  }, [me.data?.family_id, me.data?.id, qc]);
 
   const board = useOperationLeaderboard(me.data?.family_id, r.operation);
   const total = r.score + r.wrongCount;
@@ -88,17 +92,23 @@ export default function Result() {
                   ★ New family record!
                 </Text>
               </View>
+            ) : result?.is_personal_best ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 12, backgroundColor: colors.goldSoft, paddingVertical: 8, paddingHorizontal: 16, borderRadius: radius.pill }}>
+                <Text kind="bodyHeavy" size={14} color={colors.goldInk}>
+                  ★ New personal best!
+                </Text>
+              </View>
             ) : (
               <Text kind="bodyHeavy" size={14} color={colors.inkSoft} style={{ marginTop: 12, textAlign: 'center' }}>
                 {result?.my_rank ? `You're #${result.my_rank} in the family · ` : ''}
-                record is {result?.family_best ?? r.score}
+                your best is {result?.personal_best ?? r.score}
               </Text>
             )}
           </View>
 
           <Card style={{ marginTop: 18, padding: 14 }}>
             <Text kind="display" size={16} style={{ paddingHorizontal: 6, paddingTop: 4, paddingBottom: 12 }}>
-              {op.name} · all-time
+              Family standings · {op.name}
             </Text>
             <View style={{ gap: 4 }}>
               {(board.data ?? []).map((p, i) => {
