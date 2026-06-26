@@ -55,4 +55,6 @@ jobs:
       # Build only — no submit. --no-wait returns once the build is queued so we
       # don't hold a runner for the full build.
       - name: Build iOS (production)
+        env:
+          EAS_BUILD_NO_EXPO_GO_WARNING: '1' # native build workflow; not using Expo Go
         run: eas build --platform ios --profile production --non-interactive --no-wait
