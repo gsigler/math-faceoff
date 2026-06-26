@@ -14,20 +14,29 @@ import type { RecordRow, WeeklyOpRow } from '@/lib/types';
 
 export type Size = 'compact' | 'wide';
 
-/** Candy operation button. On phone it shows the record subtitle. */
+/** Candy operation button. The subtitle leads with your own best, then the
+ *  family record so you can see how you stack up at a glance. */
 export function OperationCard({
   op,
   record,
+  myBest,
   onPress,
   basis,
   showRecord = true,
 }: {
   op: OperationDef;
   record?: RecordRow;
+  myBest?: number;
   onPress: () => void;
   basis: DimensionValue;
   showRecord?: boolean;
 }) {
+  const subtitle =
+    myBest != null
+      ? `You ${myBest}${record ? ` · Record ${record.best}` : ''}`
+      : record
+        ? `Record ${record.best} · ${record.holder_name}`
+        : 'No record yet';
   return (
     <Pressable
       onPress={onPress}
@@ -50,7 +59,7 @@ export function OperationCard({
       </Text>
       {showRecord && (
         <Text kind="bodyHeavy" size={12} color={withAlpha(colors.white, 0.92)}>
-          {record ? `Record ${record.best} · ${record.holder_name}` : 'No record yet'}
+          {subtitle}
         </Text>
       )}
     </Pressable>
@@ -74,7 +83,7 @@ export function WeeklyByOperation({
   if (rows.length === 0) {
     return (
       <Text kind="bodyHeavy" size={13.5} color={colors.muted} style={{ paddingVertical: 8 }}>
-        No points yet this week — play a Faceoff to get on the board.
+        No scores yet this week — play a Faceoff to get on the board.
       </Text>
     );
   }
@@ -151,49 +160,6 @@ function WeeklyRow({
       <Text kind="display" size={wide ? 18 : 15}>
         {row.points.toLocaleString()}
       </Text>
-    </View>
-  );
-}
-
-/** 2×2 grid of all-time record cards (iPad dashboard). */
-export function RecordsGrid({ records }: { records: Map<OperationKey, RecordRow> }) {
-  return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 14 }}>
-      {OPERATION_ORDER.map((key) => {
-        const op = OPERATIONS[key];
-        const rec = records.get(key);
-        return (
-          <View
-            key={key}
-            style={{
-              flexGrow: 1,
-              flexBasis: '45%',
-              borderRadius: 20,
-              backgroundColor: op.tint,
-              borderWidth: 2,
-              borderColor: op.tintBorder,
-              padding: 16,
-            }}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <View style={{ width: 36, height: 36, borderRadius: 11, backgroundColor: op.color, alignItems: 'center', justifyContent: 'center' }}>
-                <Text kind="display" size={24} color={colors.white}>
-                  {op.sym}
-                </Text>
-              </View>
-              <Text kind="bodyHeavy" size={14}>
-                {op.name}
-              </Text>
-            </View>
-            <Text kind="displayBold" size={38} color={op.color} style={{ lineHeight: 40 }}>
-              {rec ? rec.best : '—'}
-            </Text>
-            <Text kind="bodyHeavy" size={13} color={colors.inkSoft} style={{ marginTop: 4 }}>
-              {rec ? `held by ${rec.holder_name}` : 'No record yet'}
-            </Text>
-          </View>
-        );
-      })}
     </View>
   );
 }

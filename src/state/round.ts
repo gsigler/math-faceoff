@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { makeProblem, ROUND_SECONDS, type Mode } from '@/game/facts';
+import { buildDeck, drawNext, ROUND_SECONDS, type Mode, type Problem } from '@/game/facts';
 import type { OperationKey } from '@/theme';
 
 type Status = 'idle' | 'running' | 'done';
@@ -9,6 +9,9 @@ interface RoundState {
   operation: OperationKey;
   mode: Mode;
   practiceNumber: number; // anchor for practice; ignored for faceoff
+
+  deck: Problem[]; // shuffled bag of facts; drawn without replacement
+  pos: number; // next index into `deck`
 
   a: number;
   b: number;
@@ -39,6 +42,8 @@ export const useRound = create<RoundState>((set, get) => ({
   operation: 'add',
   mode: 'faceoff',
   practiceNumber: 7,
+  deck: [],
+  pos: 0,
   a: 0,
   b: 0,
   answer: 0,
@@ -54,12 +59,14 @@ export const useRound = create<RoundState>((set, get) => ({
 
   start: (operation, mode, practiceNumber) => {
     const n = practiceNumber ?? get().practiceNumber;
-    const p = makeProblem(operation, mode, n);
+    const { problem: p, deck, pos } = drawNext(buildDeck(operation, mode, n), 0);
     set({
       status: 'running',
       operation,
       mode,
       practiceNumber: n,
+      deck,
+      pos,
       a: p.a,
       b: p.b,
       answer: p.answer,
@@ -116,8 +123,8 @@ export const useRound = create<RoundState>((set, get) => ({
   advance: () => {
     const s = get();
     if (s.status !== 'running') return;
-    const p = makeProblem(s.operation, s.mode, s.practiceNumber);
-    set({ input: '', a: p.a, b: p.b, answer: p.answer, sym: p.sym, correct: false });
+    const { problem: p, deck, pos } = drawNext(s.deck, s.pos);
+    set({ input: '', deck, pos, a: p.a, b: p.b, answer: p.answer, sym: p.sym, correct: false });
   },
 
   tick: () => {

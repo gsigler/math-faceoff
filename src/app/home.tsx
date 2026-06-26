@@ -1,11 +1,17 @@
 import { type DimensionValue, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { Card, Screen, Text } from '@/components/ui';
-import { OperationCard, RecordsGrid, WeeklyByOperation } from '@/components/boards';
+import { OperationCard, WeeklyByOperation } from '@/components/boards';
 import { colors, OPERATION_ORDER, OPERATIONS, radius, shadow, type OperationKey } from '@/theme';
 import { useLayout } from '@/theme/responsive';
 import { useFlow } from '@/state/flow';
-import { useAllTimeRecords, useLeaderboardRealtime, useMe, useWeeklyByOperation } from '@/queries/hooks';
+import {
+  useAllTimeRecords,
+  useLeaderboardRealtime,
+  useMe,
+  useMyOperationBests,
+  useWeeklyByOperation,
+} from '@/queries/hooks';
 import type { RecordRow } from '@/lib/types';
 
 /** Family chip: the family name on a candy-shadowed pill. Opens the share
@@ -40,9 +46,13 @@ export default function Home() {
   useLeaderboardRealtime(familyId);
   const weekly = useWeeklyByOperation(familyId);
   const records = useAllTimeRecords(familyId);
+  const myBests = useMyOperationBests(me.data?.id);
 
   const recordByOp = new Map<OperationKey, RecordRow>();
   records.data?.forEach((r) => recordByOp.set(r.operation, r));
+
+  const myBestByOp = new Map<OperationKey, number>();
+  myBests.data?.forEach((r) => myBestByOp.set(r.operation, r.best));
 
   function choose(op: OperationKey) {
     setOperation(op);
@@ -55,6 +65,7 @@ export default function Home() {
         key={key}
         op={OPERATIONS[key]}
         record={recordByOp.get(key)}
+        myBest={myBestByOp.get(key)}
         onPress={() => choose(key)}
         basis={basis}
         showRecord={showRecord}
@@ -80,30 +91,14 @@ export default function Home() {
         <Text kind="bodyHeavy" size={14} color={colors.muted} style={{ marginBottom: 14 }}>
           Pick an operation to play
         </Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>{operationCards('22%', false)}</View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>{operationCards('22%', true)}</View>
 
-        <View style={{ flexDirection: 'row', gap: 24, marginTop: 24 }}>
-          <Card style={{ flex: 1, padding: 22, borderRadius: 26 }}>
-            <Text kind="display" size={22} style={{ marginBottom: 18 }}>
-              This week · by operation
-            </Text>
-            <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="wide" />
-          </Card>
-          <Card style={{ flex: 1, padding: 22, borderRadius: 26 }}>
-            <Text kind="display" size={22} style={{ marginBottom: 18 }}>
-              All-time records
-            </Text>
-            <RecordsGrid records={recordByOp} />
-            <View style={{ marginTop: 16, backgroundColor: '#FFFBEF', borderRadius: radius.md, paddingVertical: 14, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Text kind="displayBold" size={15} color={colors.goldInk}>
-                ★
-              </Text>
-              <Text kind="bodyHeavy" size={13.5} color="#7a6420" style={{ flex: 1, lineHeight: 19 }}>
-                Beat a record in Faceoff and your name takes over the card here.
-              </Text>
-            </View>
-          </Card>
-        </View>
+        <Card style={{ marginTop: 24, padding: 22, borderRadius: 26 }}>
+          <Text kind="display" size={22} style={{ marginBottom: 18 }}>
+            This week · by operation
+          </Text>
+          <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="wide" />
+        </Card>
       </Screen>
     );
   }
@@ -133,26 +128,6 @@ export default function Home() {
           </Text>
         </View>
         <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="compact" />
-      </Card>
-
-      <Card style={{ marginTop: 16, padding: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <Text kind="display" size={17}>
-            All-time records
-          </Text>
-          <Text kind="bodyHeavy" size={11} color={colors.faint} style={{ letterSpacing: 0.5 }}>
-            BY OPERATION
-          </Text>
-        </View>
-        <RecordsGrid records={recordByOp} />
-        <View style={{ marginTop: 14, backgroundColor: '#FFFBEF', borderRadius: radius.md, paddingVertical: 12, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text kind="displayBold" size={14} color={colors.goldInk}>
-            ★
-          </Text>
-          <Text kind="bodyHeavy" size={12.5} color="#7a6420" style={{ flex: 1, lineHeight: 18 }}>
-            Beat a record in Faceoff and your name takes over the card.
-          </Text>
-        </View>
       </Card>
     </Screen>
   );

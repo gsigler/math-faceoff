@@ -1,9 +1,11 @@
 import { supabase } from './supabase';
 import type {
+  AttemptRow,
   Family,
   FamilyLookup,
   FinishResult,
   FinishRoundInput,
+  MyOperationBest,
   OperationRow,
   Player,
   RecordRow,
@@ -80,6 +82,32 @@ export async function fetchOperationLeaderboard(
     .order('best', { ascending: false });
   if (error) throw error;
   return (data as OperationRow[]) ?? [];
+}
+
+/** This device's own faceoff runs for one operation, newest first. */
+export async function fetchMyAttempts(
+  playerId: string,
+  operation: OperationKey,
+): Promise<AttemptRow[]> {
+  const { data, error } = await supabase
+    .from('rounds')
+    .select('id, score, wrong_count, duration_seconds, created_at')
+    .eq('player_id', playerId)
+    .eq('operation', operation)
+    .eq('mode', 'faceoff')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data as AttemptRow[]) ?? [];
+}
+
+/** This device's best faceoff score per operation (for the home tiles). */
+export async function fetchMyOperationBests(playerId: string): Promise<MyOperationBest[]> {
+  const { data, error } = await supabase
+    .from('v_operation_leaderboard')
+    .select('operation, best')
+    .eq('player_id', playerId);
+  if (error) throw error;
+  return (data as MyOperationBest[]) ?? [];
 }
 
 export async function fetchAllTimeRecords(familyId: string): Promise<RecordRow[]> {
