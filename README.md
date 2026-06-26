@@ -15,29 +15,37 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full design.
 
 ## Setup
 
-1. Install deps:
+```bash
+npm install
+npm run ios       # native dev build on a booted iOS simulator
+```
 
-   ```bash
-   npm install
-   ```
+That's it — the app runs against the hosted **sandbox** Supabase project by
+default. Its URL and publishable key are committed in `.env.development` and
+auto-loaded by Expo, so there's nothing to configure to get started. (Publishable
+keys are client keys, protected by RLS — safe to commit.)
 
-2. Create a Supabase project, then apply the schema in
-   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
-   (via the SQL editor or `supabase db push`). Make sure **Anonymous sign-ins**
-   are enabled in Auth settings.
+### Environments
 
-3. Copy `.env.example` to `.env` and fill in your project values:
+| File | Target | Loaded by |
+| ---- | ------ | --------- |
+| `.env.development` | sandbox (default) | `expo start` / dev builds |
+| `.env.production` | production | prod builds / `expo export` / EAS |
+| `.env.development.local` | local Supabase (optional, gitignored) | overrides sandbox in dev |
 
-   ```
-   EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-   EXPO_PUBLIC_SUPABASE_ANON_KEY=ey...
-   ```
+### Running against local Supabase (optional)
 
-4. Run it:
+```bash
+cp .env.local.example .env.development.local   # overrides sandbox values in dev
+supabase start                                  # local Postgres+Auth+Realtime (needs Docker)
+npm run ios
+```
 
-   ```bash
-   npm run ios       # or: npm start, then press i
-   ```
+A physical device can't reach `127.0.0.1`, so local dev is **simulator / web
+only** — use sandbox for on-device testing. To stand up your own Supabase project
+from scratch, apply [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql)
+(SQL editor or `supabase db push`) and enable **Anonymous sign-ins** in Auth
+settings.
 
 ## Project layout
 
