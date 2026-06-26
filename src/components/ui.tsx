@@ -107,7 +107,7 @@ export function SecondaryButton({
   return (
     <Pressable
       {...rest}
-      style={({ pressed }) => [styles.secondary, { opacity: pressed ? 0.85 : 1 }, style as ViewStyle]}
+      style={({ pressed }) => [styles.secondary, { boxShadow: shadow.candy, opacity: pressed ? 0.85 : 1 }, style as ViewStyle]}
     >
       <Text kind="bodyHeavy" size={17} color={colors.ink}>
         {label}
@@ -154,6 +154,33 @@ function OpGlyph({ sym, symSize, color }: { sym: string; symSize: number; color:
     ]; // ÷
   }
   return <View style={{ width: L, height: L }}>{parts}</View>;
+}
+
+/**
+ * Skip-forward glyph (⏭) drawn from geometry — two triangles + an end bar — so it
+ * matches the operator glyphs and avoids a font emoji on the button.
+ */
+export function SkipIcon({ size = 14, color = colors.inkSoft }: { size?: number; color?: string }) {
+  const h = size;
+  const w = Math.round(size * 0.5); // triangle width
+  const bar = Math.max(2, Math.round(size * 0.16));
+  const tri: ViewStyle = {
+    width: 0,
+    height: 0,
+    borderTopWidth: h / 2,
+    borderBottomWidth: h / 2,
+    borderLeftWidth: w,
+    borderTopColor: 'transparent',
+    borderBottomColor: 'transparent',
+    borderLeftColor: color,
+  };
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={tri} />
+      <View style={[tri, { marginLeft: -1 }]} />
+      <View style={{ width: bar, height: h, backgroundColor: color, borderRadius: bar / 2, marginLeft: 1 }} />
+    </View>
+  );
 }
 
 /** A rounded square holding a perfectly-centered operator glyph. */
@@ -211,8 +238,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
     backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.hairline,
   },
   back: {
     width: 38,

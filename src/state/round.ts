@@ -23,6 +23,7 @@ interface RoundState {
 
   score: number;
   wrongCount: number;
+  problemMisses: number; // wrong answers on the *current* fact; gates the Skip button
   streak: number;
 
   timeLeft: number;
@@ -32,6 +33,7 @@ interface RoundState {
   press: (digit: string) => void;
   del: () => void;
   clear: () => void;
+  skip: () => void;
   advance: () => void;
   tick: () => void;
   clearWrong: () => void;
@@ -53,6 +55,7 @@ export const useRound = create<RoundState>((set, get) => ({
   correct: false,
   score: 0,
   wrongCount: 0,
+  problemMisses: 0,
   streak: 0,
   timeLeft: ROUND_SECONDS,
   roundLen: ROUND_SECONDS,
@@ -76,6 +79,7 @@ export const useRound = create<RoundState>((set, get) => ({
       correct: false,
       score: 0,
       wrongCount: 0,
+      problemMisses: 0,
       streak: 0,
       timeLeft: ROUND_SECONDS,
       roundLen: ROUND_SECONDS,
@@ -101,7 +105,13 @@ export const useRound = create<RoundState>((set, get) => ({
     }
 
     if (next.length >= String(s.answer).length) {
-      set({ input: '', streak: 0, wrong: true, wrongCount: s.wrongCount + 1 });
+      set({
+        input: '',
+        streak: 0,
+        wrong: true,
+        wrongCount: s.wrongCount + 1,
+        problemMisses: s.problemMisses + 1,
+      });
       return;
     }
 
@@ -120,11 +130,39 @@ export const useRound = create<RoundState>((set, get) => ({
     set({ input: '' });
   },
 
+  skip: () => {
+    const s = get();
+    if (s.status !== 'running' || s.correct) return;
+    // A skip is a miss: reset the streak and record it like a wrong answer.
+    const current: Problem = { a: s.a, b: s.b, answer: s.answer, sym: s.sym };
+    // Move to a fresh problem first (this also handles a reshuffle at the seam),
+    // then drop the dodged fact back into the still-undrawn part of the bag so
+    // it comes back around — you can't skip-fish your way to only easy problems.
+    const { problem: p, deck: drawn, pos } = drawNext(s.deck, s.pos);
+    const deck = drawn.slice();
+    const insertAt = pos + Math.floor(Math.random() * (deck.length - pos + 1));
+    deck.splice(insertAt, 0, current);
+    set({
+      input: '',
+      deck,
+      pos,
+      a: p.a,
+      b: p.b,
+      answer: p.answer,
+      sym: p.sym,
+      streak: 0,
+      wrongCount: s.wrongCount + 1,
+      problemMisses: 0,
+      wrong: false,
+      correct: false,
+    });
+  },
+
   advance: () => {
     const s = get();
     if (s.status !== 'running') return;
     const { problem: p, deck, pos } = drawNext(s.deck, s.pos);
-    set({ input: '', deck, pos, a: p.a, b: p.b, answer: p.answer, sym: p.sym, correct: false });
+    set({ input: '', deck, pos, a: p.a, b: p.b, answer: p.answer, sym: p.sym, problemMisses: 0, correct: false });
   },
 
   tick: () => {
