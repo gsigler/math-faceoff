@@ -11,13 +11,26 @@ word-code.
 
 ## Run it
 
-Needs Docker running (local Supabase) and a `.env`.
+Default target is **hosted sandbox Supabase** — no Docker, no `supabase start`.
+The sandbox URL + anon key live in `.env.development` (committed) and are
+auto-loaded by Expo when `NODE_ENV=development`, so there's nothing to configure.
 
 ```bash
 npm install
+npm run ios                          # native dev build → booted iOS simulator, against sandbox Supabase
+```
+
+This is what "run this" means: a native dev build on a booted iOS simulator,
+talking to sandbox. No `.env` copy step — `.env.development` already points at it.
+
+### Local Supabase (optional)
+
+To develop against a local stack instead, copy `.env.local.example` to
+`.env.development.local` (gitignored — it overrides the sandbox values) and start
+Docker:
+
+```bash
 supabase start                       # local Postgres+Auth+Realtime; applies migrations
-cp .env.example .env                 # then paste the API URL + anon key from `supabase status`
-npm run ios                          # opens on a booted simulator via Expo Go
 ```
 
 `supabase/config.toml` already enables anonymous sign-ins and disables the local
@@ -26,6 +39,9 @@ analytics container (it fails to boot). Apply a new migration to the running DB 
 ```bash
 docker exec -i supabase_db_math-faceoff psql -U postgres -d postgres < supabase/migrations/<file>.sql
 ```
+
+Note: a physical device can't reach `127.0.0.1`, so local dev is simulator/web
+only — use sandbox (the default) for on-device testing.
 
 ## Verify before finishing
 
@@ -61,7 +77,8 @@ supabase/migrations/  schema, RLS, RPCs, leaderboard views
 - **Responsive:** wrap screens in `Screen`; pass `wide` for the iPad dashboard, omit
   it for focused single-column screens. One component set, two layouts — no forked
   screens.
-- **Env:** only `EXPO_PUBLIC_*` vars reach the client. Never commit `.env`
-  (`.env.example` is the tracked template).
+- **Env:** only `EXPO_PUBLIC_*` vars reach the client. `.env.development` (sandbox)
+  and `.env.production` are committed on purpose — publishable keys are client keys,
+  protected by RLS. Only `.env.development.local` (local override) is gitignored.
 - **Git:** branch off `main` for non-trivial work; commit/push only when asked.
 ```

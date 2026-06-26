@@ -25,32 +25,16 @@ export default function Mode() {
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <BackButton onPress={() => router.back()} />
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 9,
-            backgroundColor: op.color,
-            paddingVertical: 7,
-            paddingLeft: 12,
-            paddingRight: 16,
-            borderRadius: radius.pill,
-          }}
-        >
-          <Text kind="display" size={18} color={colors.white}>
-            {op.sym}
-          </Text>
-          <Text kind="bodyHeavy" size={14} color={colors.white}>
-            {op.name}
-          </Text>
-        </View>
+        <Text kind="display" size={26} color={op.color} style={{ flex: 1, textAlign: 'right' }}>
+          {op.name}
+        </Text>
       </View>
 
       <Text kind="display" size={26} style={{ marginTop: 22, marginHorizontal: 2 }}>
         How do you want to play?
       </Text>
       <Text kind="bodyHeavy" size={14} color={colors.muted} style={{ marginHorizontal: 2, marginTop: 4, marginBottom: 20 }}>
-        {op.name} · choose a mode
+        Choose a mode
       </Text>
 
       <View style={{ gap: 14 }}>

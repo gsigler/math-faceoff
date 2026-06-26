@@ -8,7 +8,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { BackButton, ProgressBar, Screen, Text } from '@/components/ui';
+import { BackButton, ProgressBar, Screen, SkipIcon, Text } from '@/components/ui';
 import { colors, OPERATIONS, radius, shadow } from '@/theme';
 import { formatTime, practiceLabel } from '@/game/facts';
 import { useRound } from '@/state/round';
@@ -78,9 +78,9 @@ export default function Test() {
     <Screen scroll={false}>
       {/* header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <BackButton onPress={() => router.replace('/home')} />
-        <View style={{ backgroundColor: accent, paddingVertical: 7, paddingHorizontal: 16, borderRadius: radius.pill }}>
-          <Text kind="bodyHeavy" size={14} color={colors.white}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <BackButton onPress={() => (router.canGoBack() ? router.back() : router.replace('/home'))} />
+          <Text kind="display" size={26} color={accent} numberOfLines={1}>
             {label}
           </Text>
         </View>
@@ -132,6 +132,34 @@ export default function Test() {
             <Animated.View style={[{ width: 4, height: 48, borderRadius: 2, backgroundColor: accent }, blinkStyle]} />
           )}
         </Animated.View>
+      </View>
+
+      {/* skip — appears only once you've missed the current fact twice; counts as a
+          miss and re-queues the fact for later. Row height is reserved so the keypad
+          doesn't shift when it shows up. */}
+      <View style={{ alignItems: 'flex-end', justifyContent: 'center', height: 34, marginBottom: 10 }}>
+        {r.problemMisses >= 2 && (
+          <Pressable
+            onPress={r.skip}
+            disabled={r.correct}
+            style={({ pressed }) => ({
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingVertical: 8,
+              paddingHorizontal: 16,
+              borderRadius: radius.lg,
+              backgroundColor: colors.surface,
+              boxShadow: shadow.candy,
+              opacity: r.correct ? 0.4 : pressed ? 0.85 : 1,
+            })}
+          >
+            <Text kind="bodyHeavy" size={14} color={colors.inkSoft}>
+              Skip
+            </Text>
+            <SkipIcon size={13} color={colors.inkSoft} />
+          </Pressable>
+        )}
       </View>
 
       {/* keypad */}

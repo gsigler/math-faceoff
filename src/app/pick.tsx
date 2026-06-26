@@ -1,7 +1,7 @@
 import { Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { BackButton, Screen, Text } from '@/components/ui';
-import { colors, OPERATIONS, radius, shadow } from '@/theme';
+import { colors, OPERATIONS, shadow } from '@/theme';
 import { useFlow } from '@/state/flow';
 import { useRound } from '@/state/round';
 
@@ -23,29 +23,13 @@ export default function Pick() {
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <BackButton onPress={() => router.back()} />
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 9,
-            backgroundColor: op.color,
-            paddingVertical: 7,
-            paddingLeft: 12,
-            paddingRight: 16,
-            borderRadius: radius.pill,
-          }}
-        >
-          <Text kind="display" size={18} color={colors.white}>
-            {op.sym}
-          </Text>
-          <Text kind="bodyHeavy" size={14} color={colors.white}>
-            Practice · {op.name}
-          </Text>
-        </View>
+        <Text kind="display" size={26} color={op.color} style={{ flex: 1, textAlign: 'right' }}>
+          Practice
+        </Text>
       </View>
 
       <Text kind="display" size={24} style={{ marginTop: 22, marginHorizontal: 2 }}>
-        Which number for {op.name.toLowerCase()}?
+        Pick a number
       </Text>
       <Text kind="bodyHeavy" size={14} color={colors.muted} style={{ marginHorizontal: 2, marginTop: 2, marginBottom: 18 }}>
         Tap a number to drill it for 2:00

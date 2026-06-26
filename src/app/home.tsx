@@ -22,7 +22,7 @@ function FamilyButton({ name, nameSize = 13 }: { name: string; nameSize?: number
       onPress={() => router.push('/family')}
       style={({ pressed }) => ({
         backgroundColor: colors.surface,
-        borderRadius: radius.pill,
+        borderRadius: radius.lg,
         paddingVertical: 8,
         paddingHorizontal: 16,
         boxShadow: shadow.candy,
@@ -31,6 +31,21 @@ function FamilyButton({ name, nameSize = 13 }: { name: string; nameSize?: number
     >
       <Text kind="bodyHeavy" size={nameSize}>
         {name || '…'}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** Quiet footer link into the About / support-the-creator screen. */
+function AboutLink() {
+  return (
+    <Pressable
+      onPress={() => router.push('/about')}
+      hitSlop={8}
+      style={({ pressed }) => ({ alignSelf: 'center', marginTop: 18, paddingVertical: 6, opacity: pressed ? 0.6 : 1 })}
+    >
+      <Text kind="bodyHeavy" size={13} color={colors.faint}>
+        About Fact Faceoff
       </Text>
     </Pressable>
   );
@@ -99,6 +114,8 @@ export default function Home() {
           </Text>
           <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="wide" />
         </Card>
+
+        <AboutLink />
       </Screen>
     );
   }
@@ -129,6 +146,8 @@ export default function Home() {
         </View>
         <WeeklyByOperation rows={weekly.data ?? []} meId={me.data?.id} size="compact" />
       </Card>
+
+      <AboutLink />
     </Screen>
   );
 }
