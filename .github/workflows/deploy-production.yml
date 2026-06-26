@@ -1,18 +1,17 @@
-name: Deploy production (Supabase)
+name: Deploy production (Supabase + iOS build)
 
-# Pushes database migrations to the production Supabase project.
-# Runs automatically when migrations change on main, or on demand.
+# On every push to main: push database migrations to the production Supabase
+# project AND kick off a production iOS build on EAS. This never submits to the
+# App Store — submission is a deliberate, manual step (see release-ios.yml).
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'supabase/migrations/**'
   workflow_dispatch:
 
-# Avoid overlapping migration runs.
+# Avoid overlapping production deploys.
 concurrency:
-  group: supabase-production
+  group: deploy-production
   cancel-in-progress: false
 
 jobs:
@@ -35,3 +34,25 @@ jobs:
 
       - name: Push migrations
         run: supabase db push
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # Build only — no submit. --no-wait returns once the build is queued so we
+      # don't hold a runner for the full build.
+      - name: Build iOS (production)
+        run: eas build --platform ios --profile production --non-interactive --no-wait

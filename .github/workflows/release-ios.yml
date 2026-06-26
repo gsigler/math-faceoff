@@ -1,7 +1,8 @@
 name: Release iOS
 
-# Manual job: optionally bump the app version, then build the iOS app on EAS
-# (and optionally submit it to App Store Connect once Apple credentials exist).
+# Manual release: optionally bump the app version, build the iOS app on EAS,
+# then submit it to App Store Connect. Submission requires an App Store Connect
+# API key stored on EAS (interactive Apple login does not work in CI).
 
 on:
   workflow_dispatch:
@@ -10,11 +11,6 @@ on:
         description: 'Marketing version e.g. 1.0.1 (blank = keep current app.json version)'
         required: false
         type: string
-      submit:
-        description: 'Submit the build to App Store Connect after it finishes'
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: release-ios
@@ -58,5 +54,4 @@ jobs:
         run: eas build --platform ios --profile production --non-interactive
 
       - name: Submit to App Store Connect
-        if: ${{ inputs.submit }}
         run: eas submit --platform ios --profile production --latest --non-interactive
