@@ -23,6 +23,11 @@ npm run ios                          # native dev build → booted iOS simulator
 This is what "run this" means: a native dev build on a booted iOS simulator,
 talking to sandbox. No `.env` copy step — `.env.development` already points at it.
 
+The native build needs full Xcode (not just Command Line Tools), an iOS simulator
+runtime, and CocoaPods — see [README.md](README.md#prerequisites-native-ios-build).
+No local toolchain? `npx eas-cli build --profile development --platform ios` builds
+a simulator dev-client in the cloud.
+
 ### Local Supabase (optional)
 
 To develop against a local stack instead, copy `.env.local.example` to

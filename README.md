@@ -15,6 +15,24 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full design.
 
 ## Setup
 
+### Prerequisites (native iOS build)
+
+`npm run ios` compiles a native dev build locally, so a fresh Mac needs:
+
+- **Full Xcode** (not just the Command Line Tools), with its license accepted:
+  ```bash
+  sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+  sudo xcodebuild -license accept
+  ```
+- **An iOS simulator runtime** — install via Xcode › Settings › Components, or
+  `xcodebuild -downloadPlatform iOS`.
+- **CocoaPods** — `brew install cocoapods` (bundles its own Ruby; more reliable
+  than `gem install` on the system Ruby).
+
+No local toolchain? Use a [cloud build](#cloud-builds-eas) instead.
+
+### Run it
+
 ```bash
 npm install
 npm run ios       # native dev build on a booted iOS simulator
@@ -24,6 +42,21 @@ That's it — the app runs against the hosted **sandbox** Supabase project by
 default. Its URL and publishable key are committed in `.env.development` and
 auto-loaded by Expo, so there's nothing to configure to get started. (Publishable
 keys are client keys, protected by RLS — safe to commit.)
+
+### Cloud builds (EAS)
+
+To build without a local Xcode/CocoaPods toolchain (or to build for a device),
+use [EAS](eas.json). The `development` profile produces a simulator dev-client:
+
+```bash
+npx eas-cli login
+npx eas-cli build --profile development --platform ios   # builds in the cloud
+npx eas-cli build:run --profile development --platform ios   # install on a sim
+npx expo start --dev-client                              # serve JS against sandbox
+```
+
+The build is a debug **dev-client**, so it shows Expo's floating dev-menu (gear)
+overlay — that's expected and absent from `preview`/`production` release builds.
 
 ### Environments
 
