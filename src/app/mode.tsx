@@ -89,7 +89,7 @@ export default function Mode() {
               Practice
             </Text>
             <Text kind="bodyHeavy" size={13.5} color={colors.inkSoft} style={{ marginTop: 6, lineHeight: 18 }}>
-              Pick a number and drill it. Just for you — practice runs don't post to the board.
+              Pick a number and drill it. Just for you — we track your bests, not the family board.
             </Text>
           </View>
         </Pressable>
