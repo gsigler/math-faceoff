@@ -62,6 +62,10 @@ export interface AttemptRow {
   created_at: string;
 }
 
+export interface PracticeAttemptRow extends AttemptRow {
+  practice_number: number;
+}
+
 export interface MyOperationBest {
   operation: OperationKey;
   best: number;

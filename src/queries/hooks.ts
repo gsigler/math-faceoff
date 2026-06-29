@@ -5,6 +5,7 @@ import {
   fetchMe,
   fetchMyAttempts,
   fetchMyOperationBests,
+  fetchMyPracticeAttempts,
   fetchOperationLeaderboard,
   fetchWeeklyByOperation,
 } from '@/lib/api';
@@ -18,6 +19,7 @@ export const qk = {
   records: (familyId: string) => ['records', familyId] as const,
   opBoard: (familyId: string, op: OperationKey) => ['opBoard', familyId, op] as const,
   attempts: (playerId: string, op: OperationKey) => ['attempts', playerId, op] as const,
+  practice: (playerId: string, op: OperationKey) => ['practice', playerId, op] as const,
   myBests: (playerId: string) => ['myBests', playerId] as const,
 };
 
@@ -51,6 +53,14 @@ export function useMyAttempts(playerId: string | undefined, op: OperationKey) {
   return useQuery({
     queryKey: qk.attempts(playerId ?? 'none', op),
     queryFn: () => fetchMyAttempts(playerId!, op),
+    enabled: !!playerId,
+  });
+}
+
+export function useMyPracticeAttempts(playerId: string | undefined, op: OperationKey) {
+  return useQuery({
+    queryKey: qk.practice(playerId ?? 'none', op),
+    queryFn: () => fetchMyPracticeAttempts(playerId!, op),
     enabled: !!playerId,
   });
 }
@@ -91,6 +101,7 @@ export function useLeaderboardRealtime(familyId?: string) {
           qc.invalidateQueries({ queryKey: qk.records(familyId) });
           qc.invalidateQueries({ queryKey: ['opBoard', familyId] });
           qc.invalidateQueries({ queryKey: ['attempts'] });
+          qc.invalidateQueries({ queryKey: ['practice'] });
           qc.invalidateQueries({ queryKey: ['myBests'] });
         },
       )

@@ -8,6 +8,7 @@ import type {
   MyOperationBest,
   OperationRow,
   Player,
+  PracticeAttemptRow,
   RecordRow,
   WeeklyOpRow,
 } from './types';
@@ -98,6 +99,23 @@ export async function fetchMyAttempts(
     .order('created_at', { ascending: false });
   if (error) throw error;
   return (data as AttemptRow[]) ?? [];
+}
+
+/** This device's own practice runs for one operation, newest first. */
+export async function fetchMyPracticeAttempts(
+  playerId: string,
+  operation: OperationKey,
+): Promise<PracticeAttemptRow[]> {
+  const { data, error } = await supabase
+    .from('rounds')
+    .select('id, score, wrong_count, duration_seconds, created_at, practice_number')
+    .eq('player_id', playerId)
+    .eq('operation', operation)
+    .eq('mode', 'practice')
+    .not('practice_number', 'is', null)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data as PracticeAttemptRow[]) ?? [];
 }
 
 /** This device's best faceoff score per operation (for the home tiles). */
