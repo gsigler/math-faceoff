@@ -5,11 +5,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Card, PrimaryButton, Screen, SecondaryButton, Text } from '@/components/ui';
 import { colors, OPERATIONS, radius } from '@/theme';
-import { formatTime } from '@/game/facts';
+import { formatTime, practiceLabel } from '@/game/facts';
 import { finishRound } from '@/lib/api';
-import type { FinishResult } from '@/lib/types';
+import type { FinishResult, PracticeAttemptRow } from '@/lib/types';
 import { useRound } from '@/state/round';
-import { useMe, useOperationLeaderboard, qk } from '@/queries/hooks';
+import { useMe, useMyPracticeAttempts, useOperationLeaderboard, qk } from '@/queries/hooks';
 
 export default function Result() {
   const r = useRound();
@@ -20,6 +20,9 @@ export default function Result() {
   const isPractice = r.mode === 'practice';
 
   const [result, setResult] = useState<FinishResult | null>(null);
+  // Best for this drill BEFORE this run — snapshotted from cache at post time,
+  // so it isn't clobbered when the practice query refetches with the new row.
+  const [prior, setPrior] = useState<{ best: number; runs: number }>({ best: 0, runs: 0 });
   const posted = useRef(false);
 
   // Post the round exactly once.
@@ -27,6 +30,11 @@ export default function Result() {
     if (posted.current) return;
     posted.current = true;
     const snapshot = useRound.getState();
+    if (snapshot.mode === 'practice' && me.data?.id) {
+      const cached = qc.getQueryData<PracticeAttemptRow[]>(qk.practice(me.data.id, snapshot.operation));
+      const mine = (cached ?? []).filter((p) => p.practice_number === snapshot.practiceNumber);
+      setPrior({ best: mine.reduce((m, run) => Math.max(m, run.score), 0), runs: mine.length });
+    }
     (async () => {
       try {
         const res = await finishRound({
@@ -46,6 +54,7 @@ export default function Result() {
         }
         if (me.data?.id) {
           qc.invalidateQueries({ queryKey: qk.attempts(me.data.id, snapshot.operation) });
+          qc.invalidateQueries({ queryKey: qk.practice(me.data.id, snapshot.operation) });
           qc.invalidateQueries({ queryKey: qk.myBests(me.data.id) });
         }
       } catch {
@@ -55,6 +64,10 @@ export default function Result() {
   }, [me.data?.family_id, me.data?.id, qc]);
 
   const board = useOperationLeaderboard(me.data?.family_id, r.operation);
+  const practice = useMyPracticeAttempts(me.data?.id, r.operation);
+  const drillRuns = (practice.data ?? []).filter((p) => p.practice_number === r.practiceNumber);
+  const drillBest = Math.max(r.score, prior.best);
+  const isNewBest = isPractice && prior.runs > 0 && r.score > prior.best;
   const total = r.score + r.wrongCount;
   const accuracy = total === 0 ? '100%' : `${Math.round((r.score / total) * 100)}%`;
   const label =
@@ -153,15 +166,41 @@ export default function Result() {
       )}
 
       {isPractice && (
-        <Card style={{ marginTop: 18, padding: 18 }}>
-          <Text kind="bodyHeavy" size={12} color={colors.faint} style={{ letterSpacing: 1, textAlign: 'center' }}>
-            PRACTICED · {label.toUpperCase()}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 14 }}>
-            <Stat value={String(r.score)} caption="solved" color={accent} />
-            <Stat value={accuracy} caption="accuracy" color={accent} />
-          </View>
-        </Card>
+        <>
+          {isNewBest && (
+            <View style={{ alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 12, backgroundColor: colors.goldSoft, paddingVertical: 8, paddingHorizontal: 16, borderRadius: radius.pill }}>
+                <Text kind="bodyHeavy" size={14} color={colors.goldInk}>
+                  ★ New practice best!
+                </Text>
+              </View>
+            </View>
+          )}
+
+          <Card style={{ marginTop: 18, padding: 18 }}>
+            <Text kind="bodyHeavy" size={12} color={colors.faint} style={{ letterSpacing: 1, textAlign: 'center' }}>
+              PRACTICED · {practiceLabel(r.operation, r.practiceNumber).toUpperCase()}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 14 }}>
+              <Stat value={String(r.score)} caption="solved" color={accent} />
+              <Stat value={accuracy} caption="accuracy" color={accent} />
+              <Stat value={String(drillBest)} caption="your best" color={accent} />
+            </View>
+
+            {drillRuns.length > 0 && (
+              <View style={{ marginTop: 16 }}>
+                <Text kind="bodyHeavy" size={11} color={colors.faint} style={{ letterSpacing: 0.5, marginBottom: 8, marginLeft: 2 }}>
+                  RECENT RUNS
+                </Text>
+                <View style={{ gap: 4 }}>
+                  {drillRuns.slice(0, 5).map((run, i) => (
+                    <PracticeRunRow key={run.id} run={run} isBest={run.score === drillBest && i === drillRuns.findIndex((d) => d.score === drillBest)} accent={accent} />
+                  ))}
+                </View>
+              </View>
+            )}
+          </Card>
+        </>
       )}
 
       <View style={{ flexDirection: 'row', gap: 10, marginTop: 18 }}>
@@ -169,6 +208,44 @@ export default function Result() {
         <SecondaryButton label="Done" onPress={() => router.replace('/home')} style={{ flex: 1, height: 54 }} />
       </View>
     </Screen>
+  );
+}
+
+function PracticeRunRow({ run, isBest, accent }: { run: PracticeAttemptRow; isBest: boolean; accent: string }) {
+  const total = run.score + run.wrong_count;
+  const accuracy = total === 0 ? '100%' : `${Math.round((run.score / total) * 100)}%`;
+  const date = new Date(run.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingVertical: 9,
+        paddingHorizontal: 10,
+        borderRadius: radius.sm,
+        backgroundColor: isBest ? colors.highlight : colors.surfaceAlt,
+      }}
+    >
+      <Text kind="bodyHeavy" size={14} style={{ width: 56 }}>
+        {date}
+      </Text>
+      <View style={{ flex: 1 }}>
+        <Text kind="bodyHeavy" size={12.5} color={colors.muted}>
+          {accuracy} accuracy
+        </Text>
+      </View>
+      {isBest && (
+        <View style={{ backgroundColor: accent, paddingHorizontal: 7, paddingVertical: 2, borderRadius: radius.pill }}>
+          <Text kind="bodyHeavy" size={10} color={colors.white} style={{ letterSpacing: 0.5 }}>
+            BEST
+          </Text>
+        </View>
+      )}
+      <Text kind="display" size={18}>
+        {run.score}
+      </Text>
+    </View>
   );
 }
 
