@@ -7,6 +7,9 @@ import { Card, PrimaryButton, Screen, SecondaryButton, Text } from '@/components
 import { colors, OPERATIONS, radius } from '@/theme';
 import { formatTime } from '@/game/facts';
 import { finishRound } from '@/lib/api';
+import { localDateString } from '@/lib/date';
+import { ensurePushRegistered } from '@/lib/notifications';
+import { supabase } from '@/lib/supabase';
 import type { FinishResult } from '@/lib/types';
 import { useRound } from '@/state/round';
 import { useMe, useOperationLeaderboard, qk } from '@/queries/hooks';
@@ -29,6 +32,7 @@ export default function Result() {
     const snapshot = useRound.getState();
     (async () => {
       try {
+        const now = new Date();
         const res = await finishRound({
           operation: snapshot.operation,
           mode: snapshot.mode,
@@ -36,6 +40,8 @@ export default function Result() {
           wrongCount: snapshot.wrongCount,
           practiceNumber: snapshot.mode === 'practice' ? snapshot.practiceNumber : null,
           durationSeconds: snapshot.roundLen,
+          localDate: localDateString(now),
+          localHour: now.getHours(),
         });
         setResult(res);
         const fid = me.data?.family_id;
@@ -47,6 +53,14 @@ export default function Result() {
         if (me.data?.id) {
           qc.invalidateQueries({ queryKey: qk.attempts(me.data.id, snapshot.operation) });
           qc.invalidateQueries({ queryKey: qk.myBests(me.data.id) });
+          qc.invalidateQueries({ queryKey: qk.streak(me.data.id) });
+          qc.invalidateQueries({ queryKey: qk.badges(me.data.id) });
+        }
+        if (snapshot.mode === 'faceoff') {
+          ensurePushRegistered().catch(() => {});
+        }
+        if (res.is_record) {
+          supabase.functions.invoke('record-beaten', { body: { operation: snapshot.operation } }).catch(() => {});
         }
       } catch {
         // Offline / transient: keep the local result on screen.

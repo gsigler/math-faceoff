@@ -74,4 +74,40 @@ export interface FinishRoundInput {
   wrongCount: number;
   practiceNumber?: number | null;
   durationSeconds: number;
+  localDate: string;
+  localHour: number;
+}
+
+export type StreakDayStatus = 'played' | 'frozen' | 'missed' | 'future';
+
+export interface StreakDay {
+  date: string;
+  status: StreakDayStatus;
+}
+
+export interface StreakInfo {
+  current_streak: number;
+  freezes_remaining: number;
+  last_play_date: string | null;
+  calendar: StreakDay[];
+}
+
+export interface BadgeProgress {
+  earned: boolean;
+  progress?: number;
+}
+
+export interface Badges {
+  perfect_drill: boolean;
+  streak_7: BadgeProgress;
+  streak_30: BadgeProgress;
+  family_record: boolean;
+  all_4_ops: boolean;
+  solved_100: BadgeProgress;
+  early_bird: boolean;
+  family_champion: boolean;
+  night_owl: boolean;
+  sharpshooter: boolean;
+  marathoner: boolean;
+  all_rounder: boolean;
 }

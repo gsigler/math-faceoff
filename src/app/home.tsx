@@ -2,6 +2,9 @@ import { type DimensionValue, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { Card, Screen, Text } from '@/components/ui';
 import { OperationCard, WeeklyByOperation } from '@/components/boards';
+import { badgeDefs } from '@/components/badges';
+import { StarIcon } from '@/components/icons';
+import { isStreakAtRisk, StreakAtRiskCard, StreakChip } from '@/components/streak';
 import { colors, OPERATION_ORDER, OPERATIONS, radius, shadow, type OperationKey } from '@/theme';
 import { useLayout } from '@/theme/responsive';
 import { useFlow } from '@/state/flow';
@@ -9,7 +12,9 @@ import {
   useAllTimeRecords,
   useLeaderboardRealtime,
   useMe,
+  useMyBadges,
   useMyOperationBests,
+  useMyStreak,
   useWeeklyByOperation,
 } from '@/queries/hooks';
 import type { RecordRow } from '@/lib/types';
@@ -33,6 +38,46 @@ function FamilyButton({ name, nameSize = 13 }: { name: string; nameSize?: number
         {name || '…'}
       </Text>
     </Pressable>
+  );
+}
+
+/** Small pill under the greeting that makes the badge shelf discoverable —
+ *  a plain tap on the name has no visual affordance, so this is the one
+ *  clearly-tappable element that leads there. Shows the earned count as a
+ *  hook ("3 badges") rather than a bare icon. */
+function BadgesButton({ count, onPress }: { count: number | undefined; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        alignSelf: 'flex-start',
+        backgroundColor: colors.goldSoft,
+        borderRadius: radius.pill,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        boxShadow: shadow.chip,
+        opacity: pressed ? 0.85 : 1,
+      })}
+    >
+      <StarIcon size={14} color={colors.gold} />
+      <Text kind="bodyHeavy" size={12} color={colors.goldInk}>
+        {count == null ? 'Badges' : `${count} badge${count === 1 ? '' : 's'}`}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** Streak chip, or its at-risk variant once it's past 6pm with today unplayed.
+ *  Renders nothing until the streak query resolves, to avoid a layout jump. */
+function StreakSection({ streak, onPress }: { streak: ReturnType<typeof useMyStreak>; onPress: () => void }) {
+  if (!streak.data) return null;
+  return isStreakAtRisk(streak.data) ? (
+    <StreakAtRiskCard current_streak={streak.data.current_streak} onPress={onPress} />
+  ) : (
+    <StreakChip streak={streak.data} onPress={onPress} />
   );
 }
 
@@ -62,6 +107,13 @@ export default function Home() {
   const weekly = useWeeklyByOperation(familyId);
   const records = useAllTimeRecords(familyId);
   const myBests = useMyOperationBests(me.data?.id);
+  const streak = useMyStreak(me.data?.id);
+  const badges = useMyBadges(me.data?.id);
+  const earnedBadges = badges.data ? badgeDefs(badges.data).filter((d) => d.earned).length : undefined;
+
+  function goToBadges() {
+    router.push('/badges');
+  }
 
   const recordByOp = new Map<OperationKey, RecordRow>();
   records.data?.forEach((r) => recordByOp.set(r.operation, r));
@@ -91,7 +143,7 @@ export default function Home() {
   if (isTablet) {
     return (
       <Screen wide>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 26 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <View>
             <Text kind="bodyHeavy" size={13} color={colors.faint} style={{ letterSpacing: 1 }}>
               FAMILY MATH FACEOFF
@@ -103,10 +155,18 @@ export default function Home() {
           <FamilyButton name={me.data?.family.name ?? ''} nameSize={15} />
         </View>
 
+        <View style={{ marginBottom: 20 }}>
+          <BadgesButton count={earnedBadges} onPress={goToBadges} />
+        </View>
+
         <Text kind="bodyHeavy" size={14} color={colors.muted} style={{ marginBottom: 14 }}>
           Pick an operation to play
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>{operationCards('22%', true)}</View>
+
+        <View style={{ marginTop: 24 }}>
+          <StreakSection streak={streak} onPress={goToBadges} />
+        </View>
 
         <Card style={{ marginTop: 24, padding: 22, borderRadius: 26 }}>
           <Text kind="display" size={22} style={{ marginBottom: 18 }}>
@@ -129,11 +189,20 @@ export default function Home() {
         </Text>
         <FamilyButton name={me.data?.family.name ?? ''} />
       </View>
-      <Text kind="bodyHeavy" size={13.5} color={colors.muted} style={{ marginBottom: 18 }}>
+
+      <View style={{ marginTop: 10, marginBottom: 4 }}>
+        <BadgesButton count={earnedBadges} onPress={goToBadges} />
+      </View>
+
+      <Text kind="bodyHeavy" size={13.5} color={colors.muted} style={{ marginTop: 14, marginBottom: 18 }}>
         Pick an operation to play
       </Text>
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{operationCards('47%', true)}</View>
+
+      <View style={{ marginTop: 16 }}>
+        <StreakSection streak={streak} onPress={goToBadges} />
+      </View>
 
       <Card style={{ marginTop: 16, padding: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>

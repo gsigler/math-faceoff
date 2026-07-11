@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import type {
   AttemptRow,
+  Badges,
   Family,
   FamilyLookup,
   FinishResult,
@@ -9,6 +10,7 @@ import type {
   OperationRow,
   Player,
   RecordRow,
+  StreakInfo,
   WeeklyOpRow,
 } from './types';
 import type { OperationKey } from '@/theme';
@@ -55,9 +57,35 @@ export async function finishRound(input: FinishRoundInput): Promise<FinishResult
     p_wrong_count: input.wrongCount,
     p_practice_number: input.practiceNumber ?? null,
     p_duration_seconds: input.durationSeconds,
+    p_local_date: input.localDate,
+    p_local_hour: input.localHour,
   });
   if (error) throw error;
   return data as FinishResult;
+}
+
+/** Current device's daily streak, freeze bank, and 7-day calendar. */
+export async function fetchMyStreak(): Promise<StreakInfo> {
+  const { data, error } = await supabase.rpc('my_streak');
+  if (error) throw error;
+  return data as StreakInfo;
+}
+
+/** Current device's badge shelf (earned + locked-with-progress). */
+export async function fetchMyBadges(): Promise<Badges> {
+  const { data, error } = await supabase.rpc('my_badges');
+  if (error) throw error;
+  return data as Badges;
+}
+
+export async function registerPushToken(expoPushToken: string): Promise<void> {
+  const { error } = await supabase.rpc('register_push_token', { p_expo_push_token: expoPushToken });
+  if (error) throw error;
+}
+
+export async function setMyTimezone(timezone: string): Promise<void> {
+  const { error } = await supabase.rpc('set_my_timezone', { p_timezone: timezone });
+  if (error) throw error;
 }
 
 export async function fetchWeeklyByOperation(familyId: string): Promise<WeeklyOpRow[]> {
