@@ -4,7 +4,9 @@ import {
   fetchAllTimeRecords,
   fetchMe,
   fetchMyAttempts,
+  fetchMyBadges,
   fetchMyOperationBests,
+  fetchMyStreak,
   fetchOperationLeaderboard,
   fetchWeeklyByOperation,
 } from '@/lib/api';
@@ -19,6 +21,8 @@ export const qk = {
   opBoard: (familyId: string, op: OperationKey) => ['opBoard', familyId, op] as const,
   attempts: (playerId: string, op: OperationKey) => ['attempts', playerId, op] as const,
   myBests: (playerId: string) => ['myBests', playerId] as const,
+  streak: (playerId: string) => ['streak', playerId] as const,
+  badges: (playerId: string) => ['badges', playerId] as const,
 };
 
 /** Current device's player (+ family), or null when onboarding isn't done. */
@@ -63,6 +67,22 @@ export function useMyOperationBests(playerId?: string) {
   });
 }
 
+export function useMyStreak(playerId?: string) {
+  return useQuery({
+    queryKey: qk.streak(playerId ?? 'none'),
+    queryFn: fetchMyStreak,
+    enabled: !!playerId,
+  });
+}
+
+export function useMyBadges(playerId?: string) {
+  return useQuery({
+    queryKey: qk.badges(playerId ?? 'none'),
+    queryFn: fetchMyBadges,
+    enabled: !!playerId,
+  });
+}
+
 export function useOperationLeaderboard(familyId: string | undefined, op: OperationKey) {
   return useQuery({
     queryKey: qk.opBoard(familyId ?? 'none', op),
@@ -92,6 +112,8 @@ export function useLeaderboardRealtime(familyId?: string) {
           qc.invalidateQueries({ queryKey: ['opBoard', familyId] });
           qc.invalidateQueries({ queryKey: ['attempts'] });
           qc.invalidateQueries({ queryKey: ['myBests'] });
+          qc.invalidateQueries({ queryKey: ['streak'] });
+          qc.invalidateQueries({ queryKey: ['badges'] });
         },
       )
       .subscribe();

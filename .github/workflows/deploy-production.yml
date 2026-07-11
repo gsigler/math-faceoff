@@ -1,8 +1,14 @@
 name: Deploy production (Supabase + iOS build)
 
-# On every push to main: push database migrations to the production Supabase
-# project AND kick off a production iOS build on EAS. This never submits to the
-# App Store — submission is a deliberate, manual step (see release-ios.yml).
+# On every push to main: push database migrations + Edge Functions to the
+# production Supabase project, AND kick off a production iOS build on EAS.
+# This never submits to the App Store — submission is a deliberate, manual
+# step (see release-ios.yml).
+#
+# Note: the two Vault secrets pg_cron's notify-tick job needs (project_url,
+# service_role_key) are NOT set here on purpose — set them once by hand in
+# the Supabase dashboard (Project Settings → Vault) instead of storing the
+# service-role key as a GitHub secret.
 
 on:
   push:
@@ -34,6 +40,9 @@ jobs:
 
       - name: Push migrations
         run: supabase db push
+
+      - name: Deploy Edge Functions
+        run: supabase functions deploy
 
   build:
     runs-on: ubuntu-latest
