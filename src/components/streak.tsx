@@ -56,7 +56,7 @@ function StreakCalendarRow({ calendar }: { calendar: StreakDay[] }) {
  *  underneath. Lives on Home, above the operation grid. Tapping it opens
  *  the badge shelf. */
 export function StreakChip({ streak, onPress }: { streak: StreakInfo; onPress?: () => void }) {
-  const { current_streak, freezes_remaining, calendar } = streak;
+  const { current_streak, calendar } = streak;
   return (
     <Pressable
       onPress={onPress}
@@ -78,12 +78,6 @@ export function StreakChip({ streak, onPress }: { streak: StreakInfo; onPress?: 
           </Text>
           <Text kind="bodyHeavy" size={12} color={colors.muted} style={{ marginTop: 2 }}>
             {current_streak === 0 ? 'Play a Faceoff round today' : `Play today to make it ${current_streak + 1}`}
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <DiamondIcon size={13} color="#2E90E0" />
-          <Text kind="bodyHeavy" size={13} color={colors.muted}>
-            {freezes_remaining}
           </Text>
         </View>
       </View>
