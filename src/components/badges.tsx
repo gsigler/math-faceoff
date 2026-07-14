@@ -162,17 +162,21 @@ export function BadgeTile({ def, size = 72 }: { def: BadgeDef; size?: number }) 
         <Text kind="display" size={13.5} color={def.earned ? colors.ink : colors.faint} style={{ textAlign: 'center' }}>
           {def.name}
         </Text>
-        {def.earned ? (
+        {def.earned && (
           <View style={{ marginTop: 5, backgroundColor: def.bg, paddingHorizontal: 9, paddingVertical: 3, borderRadius: radius.pill }}>
             <Text kind="bodyHeavy" size={10} color={def.fg} style={{ letterSpacing: 0.4 }}>
               EARNED
             </Text>
           </View>
-        ) : (
-          <Text kind="bodyHeavy" size={11} color={colors.faint} style={{ marginTop: 4, textAlign: 'center' }}>
-            {def.requirement}
-          </Text>
         )}
+        <Text
+          kind="bodyHeavy"
+          size={11}
+          color={colors.faint}
+          style={{ marginTop: def.earned ? 3 : 4, textAlign: 'center' }}
+        >
+          {def.requirement}
+        </Text>
       </View>
     </View>
   );
