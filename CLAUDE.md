@@ -11,17 +11,19 @@ word-code.
 
 ## Run it
 
-Default target is **hosted sandbox Supabase** — no Docker, no `supabase start`.
-The sandbox URL + anon key live in `.env.development` (committed) and are
-auto-loaded by Expo when `NODE_ENV=development`, so there's nothing to configure.
+Configure your own Supabase instance before running the app. Development builds
+have no bundled connection to the author's sandbox.
 
 ```bash
 npm install
-npm run ios                          # native dev build → booted iOS simulator, against sandbox Supabase
+cp .env.example .env.development.local
+# Fill in your own Supabase URL and publishable client key, then:
+npm run ios
 ```
 
-This is what "run this" means: a native dev build on a booted iOS simulator,
-talking to sandbox. No `.env` copy step — `.env.development` already points at it.
+Apply every checked-in migration to your own hosted development project and enable
+anonymous sign-ins. See README.md for hosted and local setup. Never use a
+service-role key or other server credential in an EXPO_PUBLIC variable.
 
 The native build needs full Xcode (not just Command Line Tools), an iOS simulator
 runtime, and CocoaPods — see [README.md](README.md#prerequisites-native-ios-build).
@@ -31,7 +33,7 @@ a simulator dev-client in the cloud.
 ### Local Supabase (optional)
 
 To develop against a local stack instead, copy `.env.local.example` to
-`.env.development.local` (gitignored — it overrides the sandbox values) and start
+`.env.development.local` (gitignored) and start
 Docker:
 
 ```bash
@@ -46,7 +48,7 @@ docker exec -i supabase_db_math-faceoff psql -U postgres -d postgres < supabase/
 ```
 
 Note: a physical device can't reach `127.0.0.1`, so local dev is simulator/web
-only — use sandbox (the default) for on-device testing.
+only — use your own hosted project for on-device testing.
 
 ## Verify before finishing
 
@@ -82,8 +84,8 @@ supabase/migrations/  schema, RLS, RPCs, leaderboard views
 - **Responsive:** wrap screens in `Screen`; pass `wide` for the iPad dashboard, omit
   it for focused single-column screens. One component set, two layouts — no forked
   screens.
-- **Env:** only `EXPO_PUBLIC_*` vars reach the client. `.env.development` (sandbox)
-  and `.env.production` are committed on purpose — publishable keys are client keys,
-  protected by RLS. Only `.env.development.local` (local override) is gitignored.
+- **Env:** only `EXPO_PUBLIC_*` vars reach the client. The existing
+  `.env.production` contains public owner client identifiers for release builds.
+  Forks must replace that configuration and the Expo project identifiers.
+  Development configuration belongs in gitignored `.env.development.local`.
 - **Git:** branch off `main` for non-trivial work; commit/push only when asked.
-```
